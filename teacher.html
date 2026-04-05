@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>BEI — Teacher App</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#1A237E;--primary-light:#E8EAF6;
+  --accent:#FF6B00;--accent-light:#FFF3E8;
+  --green:#138808;--green-light:#E8F5E9;
+  --red:#C62828;--red-light:#FFEBEE;
+  --yellow:#F9A825;--yellow-light:#FFFDE7;
+  --bg:#F4F2EE;--card:#fff;--text:#1C1B1A;--muted:#6B6860;
+  --border:#E4E0D8;--radius:14px;--shadow:0 2px 14px rgba(0,0,0,.08);
+}
+[data-theme="dark"]{
+  --bg:#0F1117;--card:#1C1F2E;--text:#E8E6E1;--muted:#9B9890;
+  --border:#2C2F3E;--shadow:0 2px 14px rgba(0,0,0,.4);
+  --primary-light:#1A1F3A;--accent-light:#2A1A0A;
+  --green-light:#0A1F0A;--red-light:#2A0A0A;--yellow-light:#2A200A;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Baloo 2','Noto Sans Devanagari',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;transition:background .2s,color .2s;}
+
+/* LOGIN */
+.login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--primary);}
+.login-logo-icon{width:70px;height:70px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 14px;}
+.login-title{font-size:20px;font-weight:800;color:#FFD4AA;text-align:center;line-height:1.3;}
+.login-sub{font-size:12px;color:rgba(255,255,255,.5);text-align:center;margin:4px 0 28px;}
+.login-card{background:var(--card);border-radius:22px;padding:26px 22px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.login-card-title{font-size:17px;font-weight:800;color:var(--primary);margin-bottom:4px;}
+.login-card-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.flabel{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.3px;}
+.finput{padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:15px;font-family:inherit;outline:none;width:100%;background:var(--bg);color:var(--text);}
+.finput:focus{border-color:var(--accent);}
+.login-btn{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;}
+.login-err{background:var(--red-light);color:var(--red);padding:9px 13px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;}
+.teacher-chips{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.teacher-chip{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .15s;display:flex;justify-content:space-between;align-items:center;}
+.teacher-chip:hover{border-color:var(--accent);background:var(--accent-light);}
+.tc-name{font-size:14px;font-weight:700;}
+.tc-sub{font-size:11px;color:var(--muted);}
+.tc-id{font-size:11px;color:var(--accent);font-weight:700;}
+
+/* APP */
+.app{display:none;min-height:100vh;flex-direction:column;}
+.app.visible{display:flex;}
+
+/* HEADER */
+.header{background:var(--primary);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.header-avatar{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#FFD4AA;flex-shrink:0;}
+.header-name{font-size:15px;font-weight:800;color:#fff;line-height:1.2;}
+.header-sub{font-size:10px;color:rgba(255,255,255,.55);}
+.header-actions{display:flex;gap:8px;}
+.hbtn{background:rgba(255,255,255,.12);border:none;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 2px 18px;z-index:100;}
+.bni{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 2px;border-radius:8px;}
+.bni.active{background:var(--accent-light);}
+.bni-icon{font-size:19px;}
+.bni-label{font-size:9px;font-weight:600;color:var(--muted);}
+.bni.active .bni-label{color:var(--accent);}
+.bni-badge{position:relative;}
+.bni-badge::after{content:attr(data-count);position:absolute;top:-4px;right:-8px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:0 4px;border-radius:8px;min-width:14px;text-align:center;display:none;}
+.bni-badge[data-count]:not([data-count="0"])::after{display:block;}
+
+/* CONTENT */
+.content{flex:1;padding:14px 14px 90px;}
+
+/* PAGES */
+.pg{display:none;}
+.pg.active{display:block;}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px;}
+.card-hdr{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;color:var(--primary);}
+.card-body{padding:14px 16px;}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px;text-align:center;}
+.stat-val{font-size:26px;font-weight:800;line-height:1;}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:4px;}
+
+/* QUERY CARDS */
+.query-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;}
+.query-hdr{padding:12px 14px;background:var(--primary-light);display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.query-student{font-size:12px;font-weight:700;color:var(--primary);}
+.query-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.query-body{padding:12px 14px;}
+.query-q{font-size:13px;font-weight:500;line-height:1.5;color:var(--text);}
+.query-answer{background:var(--green-light);border-radius:8px;padding:10px 12px;margin-top:10px;border-left:3px solid var(--green);}
+.query-answer-label{font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;}
+.query-answer-text{font-size:12px;color:var(--text);line-height:1.5;}
+.query-actions{padding:0 14px 12px;display:flex;gap:8px;flex-wrap:wrap;}
+.reply-area{padding:0 14px 12px;}
+.reply-ta{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;background:var(--bg);color:var(--text);min-height:80px;}
+.reply-ta:focus{border-color:var(--green);}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.b-green{background:var(--green-light);color:var(--green);}
+.b-red{background:var(--red-light);color:var(--red);}
+.b-yellow{background:var(--yellow-light);color:#b8860b;}
+.b-navy{background:var(--primary-light);color:var(--primary);}
+.b-orange{background:var(--accent-light);color:var(--accent);}
+
+/* ATTENDANCE */
+.att-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.att-student{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;}
+.att-name{font-size:13px;font-weight:600;line-height:1.2;}
+.att-id{font-size:10px;color:var(--muted);}
+.att-btns{display:flex;gap:5px;}
+.att-btn{width:30px;height:30px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:700;}
+.att-p{background:var(--green-light);color:var(--green);}
+.att-p.sel{background:var(--green);color:#fff;}
+.att-a{background:var(--red-light);color:var(--red);}
+.att-a.sel{background:var(--red);color:#fff;}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.fsel{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--card);cursor:pointer;color:var(--text);}
+.fsel.primary{border-color:var(--accent);font-weight:700;}
+.fsearch{flex:1;min-width:120px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--card);color:var(--text);}
+.fsearch:focus,.fsel:focus{border-color:var(--accent);}
+
+/* LECTURE FORM */
+.lec-form{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:14px;}
+.lec-form-title{font-size:14px;font-weight:700;color:var(--primary);margin-bottom:14px;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg2{display:flex;flex-direction:column;gap:4px;}
+.fg2.full{grid-column:1/-1;}
+.fg2 label{font-size:11px;font-weight:700;color:var(--muted);}
+.fg2 input,.fg2 select,.fg2 textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--bg);color:var(--text);width:100%;}
+.fg2 input:focus,.fg2 select:focus,.fg2 textarea:focus{border-color:var(--accent);}
+
+/* LECT LIST */
+.lec-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:13px;margin-bottom:10px;}
+.lec-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.lec-subj{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;}
+.lec-date{font-size:10px;color:var(--muted);}
+.lec-topic{font-size:14px;font-weight:700;color:var(--primary);line-height:1.3;}
+
+/* NOTIFICATION */
+.notif-card{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--accent);display:flex;gap:12px;align-items:flex-start;}
+.notif-icon{font-size:20px;flex-shrink:0;}
+.notif-text{font-size:13px;font-weight:500;line-height:1.4;}
+.notif-time{font-size:10px;color:var(--muted);margin-top:3px;}
+.notif-new{border-left-color:var(--red);}
+
+/* BUTTONS */
+.btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary);}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px;}
+
+/* SECTION TITLE */
+.sec-title{font-size:14px;font-weight:700;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 16px;color:var(--muted);}
+.empty-icon{font-size:42px;margin-bottom:10px;}
+.empty-en{font-size:13px;font-weight:600;}
+.empty-hi{font-size:11px;opacity:.7;margin-top:3px;}
+
+/* PILL */
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.pill-nk{background:rgba(255,107,0,.15);color:var(--accent);}
+.pill-rp{background:rgba(19,136,8,.15);color:var(--green);}
+
+/* TOAST */
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--primary);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
+.filter-tabs::-webkit-scrollbar{display:none;}
+.ftab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--card);border:1.5px solid var(--border);cursor:pointer;white-space:nowrap;color:var(--muted);}
+.ftab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-logo-icon">👩‍🏫</div>
+  <div class="login-title">Brilliant Educational<br>Institute</div>
+  <div class="login-sub">Teacher Portal · शिक्षक पोर्टल</div>
+  <div class="login-card">
+    <div class="login-card-title">Teacher Login</div>
+    <div class="login-card-sub">Select your name, then enter your 4-digit PIN</div>
+    <div class="login-err" id="login-err"></div>
+    <!-- Quick select teacher -->
+    <div class="teacher-chips" id="teacher-chips"></div>
+    <div class="fg">
+      <label class="flabel">Teacher ID (auto-filled)</label>
+      <input class="finput" id="inp-tid" placeholder="e.g. TCH-001" style="text-transform:uppercase"/>
+    </div>
+    <div class="fg">
+      <label class="flabel">4-Digit PIN</label>
+      <input class="finput" type="password" id="inp-pin" maxlength="4" placeholder="Enter PIN" inputmode="numeric"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Login → Enter</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-avatar" id="hdr-avatar">?</div>
+      <div>
+        <div class="header-name" id="hdr-name">Teacher</div>
+        <div class="header-sub" id="hdr-sub">Brilliant Educational Institute</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="hbtn" onclick="toggleDark()" id="dark-btn">🌙</button>
+      <button class="hbtn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="pg active" id="pg-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-val" style="color:var(--red)" id="ds-pending">0</div><div class="stat-lbl">Pending Queries</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="ds-answered">0</div><div class="stat-lbl">Answered</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="ds-lectures">0</div><div class="stat-lbl">My Lectures</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--primary)" id="ds-classes">0</div><div class="stat-lbl">Classes Today</div></div>
+      </div>
+
+      <div class="sec-title">🔔 New Queries <span style="font-size:11px;font-weight:400;color:var(--muted)">नए प्रश्न</span></div>
+      <div id="dash-queries"></div>
+
+      <div class="sec-title" style="margin-top:4px">📢 Recent Notices</div>
+      <div id="dash-notices"></div>
+    </div>
+
+    <!-- QUERIES -->
+    <div class="pg" id="pg-queries">
+      <div class="filter-tabs" id="query-filter-tabs">
+        <div class="ftab active" onclick="filterQueries('all',this)">All</div>
+        <div class="ftab" onclick="filterQueries('pending',this)">🔴 Pending</div>
+        <div class="ftab" onclick="filterQueries('answered',this)">✅ Answered</div>
+      </div>
+      <div id="queries-list"></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="pg" id="pg-attendance">
+      <div class="toolbar">
+        <select class="fsel primary" id="att-branch" onchange="loadAtt()">
+          <option value="">Branch / शाखा</option>
+          <option value="Narkatiya">📍 Narkatiya</option>
+          <option value="Rampur">📍 Rampur</option>
+        </select>
+        <select class="fsel" id="att-class" onchange="loadAtt()">
+          <option value="">Class / कक्षा</option>
+          <option>6th</option><option>7th</option><option>8th</option>
+          <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
+        </select>
+        <select class="fsel" id="att-subj">
+          <option>Maths</option><option>Science</option><option>Hindi</option>
+          <option>English</option><option>Social Science</option>
+        </select>
+        <input type="date" id="att-date" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--card);color:var(--text);"/>
+      </div>
+      <div class="att-grid" id="att-grid">
+        <div class="empty" style="grid-column:1/-1"><div class="empty-icon">📋</div><div class="empty-en">Select branch and class</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px" id="att-save-row" style="display:none">
+        <button class="btn btn-green" style="flex:1" onclick="saveAtt()">✅ Save Attendance</button>
+      </div>
+    </div>
+
+    <!-- LECTURES -->
+    <div class="pg" id="pg-lectures">
+      <!-- Add lecture form -->
+      <div class="lec-form">
+        <div class="lec-form-title" id="lec-form-title">➕ Post New Lecture</div>
+        <div class="fgrid">
+          <div class="fg2">
+            <label>Branch *</label>
+            <select id="l-branch" class="fsel primary">
+              <option value="Narkatiya">📍 Narkatiya</option>
+              <option value="Rampur">📍 Rampur</option>
+            </select>
+          </div>
+          <div class="fg2">
+            <label>Class *</label>
+            <select id="l-class">
+              <option>6th</option><option>7th</option><option>8th</option>
+              <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
+            </select>
+          </div>
+          <div class="fg2">
+            <label>Subject *</label>
+            <select id="l-subj">
+              <option>Maths</option><option>Science</option><option>Hindi</option>
+              <option>English</option><option>Social Science</option>
+            </select>
+          </div>
+          <div class="fg2">
+            <label>Date</label>
+            <input type="date" id="l-date"/>
+          </div>
+          <div class="fg2 full">
+            <label>Topic (English) *</label>
+            <input type="text" id="l-topic" placeholder="e.g. Quadratic Equations"/>
+          </div>
+          <div class="fg2 full">
+            <label>Topic (Hindi) — Optional</label>
+            <input type="text" id="l-topic-hi" placeholder="e.g. द्विघात समीकरण"/>
+          </div>
+          <div class="fg2 full">
+            <label>YouTube URL (Unlisted) *</label>
+            <input type="url" id="l-url" placeholder="https://youtube.com/watch?v=..."/>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn btn-outline" onclick="cancelLec()" id="lec-cancel-btn" style="display:none">Cancel</button>
+          <button class="btn btn-primary" style="flex:1" onclick="saveLecture()" id="lec-save-btn">📤 Post Lecture</button>
+        </div>
+      </div>
+
+      <!-- Lecture list -->
+      <div class="toolbar">
+        <select class="fsel primary" id="lf-branch" onchange="renderLectures()">
+          <option value="">All Branches</option>
+          <option value="Narkatiya">📍 Narkatiya</option>
+          <option value="Rampur">📍 Rampur</option>
+        </select>
+        <select class="fsel" id="lf-class" onchange="renderLectures()">
+          <option value="">All Classes</option>
+          <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
+        </select>
+      </div>
+      <div id="lec-list"></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="pg" id="pg-notifications">
+      <div class="filter-tabs">
+        <div class="ftab active" onclick="filterNotifs('all',this)">All</div>
+        <div class="ftab" onclick="filterNotifs('query',this)">❓ Queries</div>
+        <div class="ftab" onclick="filterNotifs('system',this)">📢 System</div>
+      </div>
+      <div id="notif-list"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="pg" id="pg-profile">
+      <div class="card">
+        <div style="background:var(--primary);padding:20px;display:flex;gap:14px;align-items:center">
+          <div style="width:54px;height:54px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#FFD4AA;flex-shrink:0" id="prof-avatar">?</div>
+          <div>
+            <div style="font-size:17px;font-weight:800;color:#fff" id="prof-name">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.55)" id="prof-id">—</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted)">Subjects</span>
+            <span style="font-size:13px;font-weight:600" id="prof-subj">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted)">Classes</span>
+            <span style="font-size:13px;font-weight:600" id="prof-cls">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted)">Qualification</span>
+            <span style="font-size:13px;font-weight:600" id="prof-qual">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:9px 0">
+            <span style="font-size:12px;color:var(--muted)">Mobile</span>
+            <span style="font-size:13px;font-weight:600" id="prof-phone">—</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px">
+        <div>
+          <div style="font-size:13px;font-weight:700">Dark Mode 🌙</div>
+          <div style="font-size:11px;color:var(--muted)">Switch to dark theme</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="toggleDark()">Toggle</button>
+      </div>
+      <button style="width:100%;padding:13px;background:var(--red-light);color:var(--red);border:1.5px solid var(--red-light);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" onclick="doLogout()">Logout</button>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="bni active" onclick="showPg('dashboard',this)"><div class="bni-icon">📊</div><div class="bni-label">Home</div></div>
+    <div class="bni bni-badge" id="bn-queries" onclick="showPg('queries',this)" data-count="0"><div class="bni-icon">❓</div><div class="bni-label">Queries</div></div>
+    <div class="bni" onclick="showPg('attendance',this)"><div class="bni-icon">✅</div><div class="bni-label">Attend.</div></div>
+    <div class="bni" onclick="showPg('lectures',this)"><div class="bni-icon">🎥</div><div class="bni-label">Lectures</div></div>
+    <div class="bni bni-badge" id="bn-notifs" onclick="showPg('notifications',this)" data-count="0"><div class="bni-icon">🔔</div><div class="bni-label">Notifs</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+// SHARED DATA (embedded copy — in production replace with API)
+// ════════════════════════════════════
+const STUDENTS=[
+  {id:'STU-NK-001',name:'Rahul Kumar Sharma',dob:'2010-05-15',cls:'10th',batch:'Batch A',branch:'Narkatiya'},
+  {id:'STU-NK-002',name:'Priya Yadav',dob:'2011-08-22',cls:'9th',batch:'Batch A',branch:'Narkatiya'},
+  {id:'STU-NK-003',name:'Amit Kumar Singh',dob:'2009-12-10',cls:'11th',batch:'Batch B',branch:'Narkatiya'},
+  {id:'STU-RP-001',name:'Sonam Gupta',dob:'2012-03-18',cls:'8th',batch:'Batch A',branch:'Rampur'},
+  {id:'STU-RP-002',name:'Rohan Tiwari',dob:'2010-07-04',cls:'10th',batch:'Batch B',branch:'Rampur'},
+  {id:'STU-RP-003',name:'Anjali Mishra',dob:'2011-01-30',cls:'9th',batch:'Batch A',branch:'Rampur'},
+  {id:'STU-RP-004',name:'Vikas Rai',dob:'2008-09-12',cls:'12th',batch:'Batch B',branch:'Rampur'},
+];
+
+const TEACHERS=[
+  {id:'TCH-001',name:'Sh. Ramesh Kumar',subj:'Maths, Science',classes:'9th,10th,11th,12th',phone:'9800000001',pin:'1234',qual:'M.Sc Physics'},
+  {id:'TCH-002',name:'Smt. Sunita Devi',subj:'Hindi, Social Science',classes:'6th,7th,8th,9th',phone:'9800000002',pin:'5678',qual:'M.A. Hindi'},
+  {id:'TCH-003',name:'Sh. Anil Pandey',subj:'English',classes:'All',phone:'9800000003',pin:'9012',qual:'M.A. English'},
+];
+
+// Load persisted data
+function loadLS(key,fallback){try{const d=localStorage.getItem(key);return d?JSON.parse(d):fallback;}catch{return fallback;}}
+function saveLS(key,data){try{localStorage.setItem(key,JSON.stringify(data));}catch{}}
+
+let QUERIES=loadLS('bei_queries',[
+  {id:'Q001',studentId:'STU-NK-001',studentName:'Rahul Kumar Sharma',branch:'Narkatiya',cls:'10th',subject:'Maths',question:'In quadratic equations, when do we use discriminant vs factoring?',date:'2026-04-04',time:'8:45 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'Great question Rahul! Use factoring first when roots look like integers. If not obvious in 30 sec, use quadratic formula. Discriminant b²−4ac: positive=2 roots, zero=1 root, negative=no real roots.',responseDate:'2026-04-05',responseTime:'7:20 AM',resolvedIn:'app'},
+  {id:'Q002',studentId:'STU-NK-002',studentName:'Priya Yadav',branch:'Narkatiya',cls:'9th',subject:'Hindi',question:'कबीर के दोहों में "माटी कहे कुम्हार से" का गहरा अर्थ क्या है?',date:'2026-04-04',time:'9:10 PM',status:'pending',teacherId:'TCH-002',teacherName:'Smt. Sunita Devi',response:null,responseDate:null},
+  {id:'Q003',studentId:'STU-RP-002',studentName:'Rohan Tiwari',branch:'Rampur',cls:'10th',subject:'Maths',question:'I am confused about signs when completing the square. Step by step example please.',date:'2026-04-03',time:'7:30 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'For x²+6x+5=0: Move constant→x²+6x=−5, Add 9 both sides→(x+3)²=4, So x=−1 or x=−5. Covering in class too!',responseDate:'2026-04-04',responseTime:'6:45 AM',resolvedIn:'class'},
+  {id:'Q004',studentId:'STU-RP-004',studentName:'Vikas Rai',branch:'Rampur',cls:'12th',subject:'Maths',question:'Integration by parts — how to choose u and dv? The LIATE rule confuses me.',date:'2026-04-05',time:'6:00 PM',status:'pending',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:null,responseDate:null},
+]);
+
+let LECTURES=loadLS('bei_lectures',[
+  {id:'LEC-001',branch:'Narkatiya',cls:'10th',subj:'Maths',topic:'Quadratic Equations',topicHi:'द्विघात समीकरण',teacherId:'TCH-001',teacher:'Sh. Ramesh Kumar',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {id:'LEC-002',branch:'Narkatiya',cls:'10th',subj:'Science',topic:'Laws of Motion',topicHi:'गति के नियम',teacherId:'TCH-001',teacher:'Sh. Ramesh Kumar',date:'2026-04-02',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {id:'LEC-003',branch:'Rampur',cls:'9th',subj:'Hindi',topic:'Kabir Ke Dohe',topicHi:'कबीर के दोहे',teacherId:'TCH-002',teacher:'Smt. Sunita Devi',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+]);
+
+let NOTIFICATIONS=loadLS('bei_teacher_notifs',[
+  {id:'N001',type:'query',teacherId:'TCH-001',title:'New query from Rahul (10th)',text:'About quadratic equations',date:'2026-04-04',time:'8:45 PM',read:true},
+  {id:'N002',type:'query',teacherId:'TCH-002',title:'New query from Priya (9th)',text:'About Kabir ke dohe',date:'2026-04-04',time:'9:10 PM',read:false},
+  {id:'N003',type:'system',teacherId:'all',title:'Admin: Exam schedule updated',text:'Mid-term results published',date:'2026-04-03',time:'5:00 PM',read:true},
+  {id:'N004',type:'query',teacherId:'TCH-001',title:'New query from Vikas (12th)',text:'About integration by parts',date:'2026-04-05',time:'6:00 PM',read:false},
+]);
+
+let attState={};
+let currentTeacher=null;
+let editingLec=null;
+let queryFilter='all';
+let notifFilter='all';
+let isDark=localStorage.getItem('bei_teacher_dark')==='true';
+
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('att-date').value=today;
+document.getElementById('l-date').value=today;
+
+// Render teacher quick-select chips
+document.getElementById('teacher-chips').innerHTML=TEACHERS.map(t=>`
+  <div class="teacher-chip" onclick="selectTeacher('${t.id}')">
+    <div><div class="tc-name">${t.name}</div><div class="tc-sub">${t.subj}</div></div>
+    <div class="tc-id">${t.id}</div>
+  </div>`).join('');
+
+if(isDark) document.documentElement.setAttribute('data-theme','dark');
+document.getElementById('dark-btn').textContent=isDark?'☀️':'🌙';
+
+// ════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════
+function toast(msg,dur=3000){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),dur);
+}
+function branchPill(b){
+  return `<span class="pill ${b==='Narkatiya'?'pill-nk':'pill-rp'}">📍 ${b}</span>`;
+}
+function nextQId(){return 'Q'+String(QUERIES.length+100).padStart(3,'0');}
+function nextLId(){return 'LEC-'+String(LECTURES.length+100).padStart(3,'0');}
+
+// ════════════════════════════════════
+// DARK MODE
+// ════════════════════════════════════
+function toggleDark(){
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme',isDark?'dark':'');
+  document.getElementById('dark-btn').textContent=isDark?'☀️':'🌙';
+  localStorage.setItem('bei_teacher_dark',isDark);
+  toast(isDark?'🌙 Dark mode on':'☀️ Light mode on');
+}
+
+// ════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════
+function selectTeacher(id){
+  document.getElementById('inp-tid').value=id;
+  document.getElementById('inp-pin').focus();
+}
+
+function doLogin(){
+  const id=document.getElementById('inp-tid').value.trim().toUpperCase();
+  const pin=document.getElementById('inp-pin').value.trim();
+  const err=document.getElementById('login-err');
+  err.style.display='none';
+  if(!id||!pin){err.textContent='Please enter Teacher ID and PIN';err.style.display='block';return;}
+  const teacher=TEACHERS.find(t=>t.id===id&&t.pin===pin);
+  if(!teacher){err.textContent='Incorrect Teacher ID or PIN. Please try again.';err.style.display='block';return;}
+  currentTeacher=teacher;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  bootApp();
+}
+
+document.getElementById('inp-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+function doLogout(){
+  currentTeacher=null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-pin').value='';
+  document.getElementById('inp-tid').value='';
+}
+
+function bootApp(){
+  const t=currentTeacher;
+  const initials=t.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+  document.getElementById('hdr-avatar').textContent=initials;
+  document.getElementById('hdr-name').textContent=t.name;
+  document.getElementById('hdr-sub').textContent=t.subj+' · '+t.classes;
+  document.getElementById('prof-avatar').textContent=initials;
+  document.getElementById('prof-name').textContent=t.name;
+  document.getElementById('prof-id').textContent=t.id;
+  document.getElementById('prof-subj').textContent=t.subj;
+  document.getElementById('prof-cls').textContent=t.classes;
+  document.getElementById('prof-qual').textContent=t.qual||'—';
+  document.getElementById('prof-phone').textContent=t.phone;
+  updateBadges();
+  renderDashboard();
+  renderQueries();
+  renderLectures();
+  renderNotifications();
+}
+
+// ════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════
+function showPg(name,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(name==='notifications'){markNotifsRead();}
+}
+
+function updateBadges(){
+  const pending=QUERIES.filter(q=>q.status==='pending'&&
+    (q.teacherId===currentTeacher.id||currentTeacher.subj.toLowerCase().includes(q.subject.toLowerCase()))).length;
+  const unread=NOTIFICATIONS.filter(n=>(n.teacherId===currentTeacher.id||n.teacherId==='all')&&!n.read).length;
+  document.getElementById('bn-queries').setAttribute('data-count',pending);
+  document.getElementById('bn-notifs').setAttribute('data-count',unread);
+}
+
+// ════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════
+function renderDashboard(){
+  const t=currentTeacher;
+  const myQ=QUERIES.filter(q=>q.teacherId===t.id||t.subj.toLowerCase().includes(q.subject.toLowerCase()));
+  const pending=myQ.filter(q=>q.status==='pending').length;
+  const answered=myQ.filter(q=>q.status==='answered').length;
+  const myLec=LECTURES.filter(l=>l.teacherId===t.id);
+  document.getElementById('ds-pending').textContent=pending;
+  document.getElementById('ds-answered').textContent=answered;
+  document.getElementById('ds-lectures').textContent=myLec.length;
+  document.getElementById('ds-classes').textContent=myLec.filter(l=>l.date===today).length;
+
+  const pendingQ=myQ.filter(q=>q.status==='pending');
+  document.getElementById('dash-queries').innerHTML=pendingQ.length
+    ?pendingQ.slice(0,3).map(q=>queryCardHTML(q,true)).join('')
+    :'<div class="empty"><div class="empty-icon">✅</div><div class="empty-en">No pending queries!</div></div>';
+
+  document.getElementById('dash-notices').innerHTML=`
+    <div class="notif-card"><div class="notif-icon">📢</div><div><div class="notif-text">Annual exam schedule to be announced on 15th April</div><div class="notif-time">5 Apr 2026</div></div></div>
+    <div class="notif-card"><div class="notif-icon">💰</div><div><div class="notif-text">Fee payment last date: 30th April</div><div class="notif-time">3 Apr 2026</div></div></div>`;
+}
+
+// ════════════════════════════════════
+// QUERIES
+// ════════════════════════════════════
+function queryCardHTML(q,compact=false){
+  const isPending=q.status==='pending';
+  const isMyQ=q.teacherId===currentTeacher.id||currentTeacher.subj.toLowerCase().includes(q.subject.toLowerCase());
+  return `<div class="query-card" id="qcard-${q.id}">
+    <div class="query-hdr">
+      <div>
+        <div class="query-student">${q.studentName}</div>
+        <div class="query-meta">${branchPill(q.branch)} · Class ${q.cls} · ${q.date} ${q.time}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <span class="badge ${isPending?'b-red':'b-green'}">${isPending?'⏳ Pending':'✅ Answered'}</span>
+        <span class="badge b-navy">${q.subject}</span>
+      </div>
+    </div>
+    <div class="query-body">
+      <div class="query-q">${q.question}</div>
+      ${q.response?`<div class="query-answer">
+        <div class="query-answer-label">Your reply · ${q.responseDate} ${q.responseTime||''} ${q.resolvedIn?'('+q.resolvedIn+')':''}</div>
+        <div class="query-answer-text">${q.response}</div>
+      </div>`:''}
+    </div>
+    ${isPending&&isMyQ&&!compact?`
+    <div class="reply-area">
+      <textarea class="reply-ta" id="reply-${q.id}" placeholder="Type your response here... Students will see this immediately."></textarea>
+    </div>
+    <div class="query-actions">
+      <button class="btn btn-green btn-sm" onclick="replyQuery('${q.id}','app')">✅ Reply In-App</button>
+      <button class="btn btn-outline btn-sm" onclick="replyQuery('${q.id}','class')">🏫 Will Cover in Class</button>
+    </div>`:''}
+    ${isPending&&isMyQ&&compact?`
+    <div class="query-actions">
+      <button class="btn btn-green btn-sm" onclick="showPg('queries',document.querySelector('[onclick*=queries]'));renderQueries();">Reply →</button>
+    </div>`:''}
+  </div>`;
+}
+
+function filterQueries(filter,el){
+  queryFilter=filter;
+  document.querySelectorAll('.filter-tabs .ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderQueries();
+}
+
+function renderQueries(){
+  const t=currentTeacher;
+  let list=QUERIES.filter(q=>
+    q.teacherId===t.id||t.subj.toLowerCase().includes(q.subject.toLowerCase())
+  );
+  if(queryFilter==='pending') list=list.filter(q=>q.status==='pending');
+  if(queryFilter==='answered') list=list.filter(q=>q.status==='answered');
+  document.getElementById('queries-list').innerHTML=list.length
+    ?list.map(q=>queryCardHTML(q,false)).join('')
+    :`<div class="empty"><div class="empty-icon">❓</div><div class="empty-en">No ${queryFilter==='all'?'':queryFilter} queries</div></div>`;
+}
+
+function replyQuery(qid,method){
+  const q=QUERIES.find(x=>x.id===qid);
+  if(!q)return;
+  const ta=document.getElementById('reply-'+qid);
+  const text=ta?ta.value.trim():'';
+  if(method==='app'&&!text){toast('⚠️ Please write a reply first');return;}
+  q.status='answered';
+  q.response=method==='class'?'This will be covered in tomorrow\'s class. Please attend! — '+currentTeacher.name:text;
+  q.responseDate=new Date().toLocaleDateString('en-IN');
+  q.responseTime=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  q.resolvedIn=method;
+  q.teacherName=currentTeacher.name;
+  saveLS('bei_queries',QUERIES);
+  updateBadges();
+  renderQueries();
+  renderDashboard();
+  toast(method==='class'?'✅ Student notified — will cover in class':'✅ Reply sent! Student will see it now.');
+}
+
+// ════════════════════════════════════
+// ATTENDANCE
+// ════════════════════════════════════
+function loadAtt(){
+  const branch=document.getElementById('att-branch').value;
+  const cls=document.getElementById('att-class').value;
+  if(!branch||!cls){
+    document.getElementById('att-grid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📋</div><div class="empty-en">Select both branch and class</div></div>';
+    document.getElementById('att-save-row').style.display='none';
+    return;
+  }
+  const list=STUDENTS.filter(s=>s.branch===branch&&s.cls===cls);
+  attState={};
+  list.forEach(s=>attState[s.id]='P');
+  document.getElementById('att-grid').innerHTML=list.length
+    ?list.map(s=>`<div class="att-student">
+        <div><div class="att-name">${s.name}</div><div class="att-id">${s.id}</div></div>
+        <div class="att-btns">
+          <button class="att-btn att-p sel" id="ap-${s.id}" onclick="markAtt('${s.id}','P')">P</button>
+          <button class="att-btn att-a" id="aa-${s.id}" onclick="markAtt('${s.id}','A')">A</button>
+        </div></div>`).join('')
+    :'<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-en">No students in this branch + class</div></div>';
+  document.getElementById('att-save-row').style.display=list.length?'flex':'none';
+}
+
+function markAtt(id,s){
+  attState[id]=s;
+  document.getElementById('ap-'+id).classList.toggle('sel',s==='P');
+  document.getElementById('aa-'+id).classList.toggle('sel',s==='A');
+}
+
+function saveAtt(){
+  const branch=document.getElementById('att-branch').value;
+  const cls=document.getElementById('att-class').value;
+  const subj=document.getElementById('att-subj').value;
+  const date=document.getElementById('att-date').value;
+  const p=Object.values(attState).filter(v=>v==='P').length;
+  const total=Object.keys(attState).length;
+  const record={branch,cls,subj,date,teacher:currentTeacher.name,teacherId:currentTeacher.id,present:p,total,state:{...attState}};
+  const saved=loadLS('bei_teacher_att',[]);
+  saved.push(record);
+  saveLS('bei_teacher_att',saved);
+  toast(`✅ Attendance saved — ${branch} · ${cls} · ${subj} (${p}/${total} present)`);
+}
+
+// ════════════════════════════════════
+// LECTURES
+// ════════════════════════════════════
+function saveLecture(){
+  const topic=document.getElementById('l-topic').value.trim();
+  const url=document.getElementById('l-url').value.trim();
+  if(!topic){toast('⚠️ Topic is required');return;}
+  if(!url){toast('⚠️ YouTube URL is required');return;}
+  const lec={
+    id:editingLec?editingLec.id:nextLId(),
+    branch:document.getElementById('l-branch').value,
+    cls:document.getElementById('l-class').value,
+    subj:document.getElementById('l-subj').value,
+    topic,topicHi:document.getElementById('l-topic-hi').value.trim(),
+    url,date:document.getElementById('l-date').value,
+    teacherId:currentTeacher.id,teacher:currentTeacher.name,
+  };
+  if(editingLec){
+    const idx=LECTURES.findIndex(l=>l.id===editingLec.id);
+    if(idx>=0)LECTURES[idx]=lec;
+    toast('✅ Lecture updated!');
+  } else {
+    LECTURES.unshift(lec);
+    toast('✅ Lecture posted! Students can now watch it.');
+  }
+  saveLS('bei_lectures',LECTURES);
+  cancelLec();
+  renderLectures();
+  renderDashboard();
+}
+
+function editLecture(id){
+  const l=LECTURES.find(x=>x.id===id);if(!l)return;
+  editingLec=l;
+  document.getElementById('l-branch').value=l.branch;
+  document.getElementById('l-class').value=l.cls;
+  document.getElementById('l-subj').value=l.subj;
+  document.getElementById('l-topic').value=l.topic;
+  document.getElementById('l-topic-hi').value=l.topicHi||'';
+  document.getElementById('l-url').value=l.url;
+  document.getElementById('l-date').value=l.date;
+  document.getElementById('lec-form-title').textContent='✏️ Edit Lecture';
+  document.getElementById('lec-save-btn').textContent='💾 Save Changes';
+  document.getElementById('lec-cancel-btn').style.display='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteLecture(id){
+  if(!confirm('Delete this lecture? Students will no longer see it.'))return;
+  const idx=LECTURES.findIndex(l=>l.id===id);
+  if(idx>=0)LECTURES.splice(idx,1);
+  saveLS('bei_lectures',LECTURES);
+  renderLectures();
+  toast('Lecture deleted.');
+}
+
+function cancelLec(){
+  editingLec=null;
+  ['l-topic','l-topic-hi','l-url'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('l-date').value=today;
+  document.getElementById('lec-form-title').textContent='➕ Post New Lecture';
+  document.getElementById('lec-save-btn').textContent='📤 Post Lecture';
+  document.getElementById('lec-cancel-btn').style.display='none';
+}
+
+function renderLectures(){
+  const branch=document.getElementById('lf-branch')?.value||'';
+  const cls=document.getElementById('lf-class')?.value||'';
+  const list=LECTURES.filter(l=>
+    l.teacherId===currentTeacher.id&&
+    (!branch||l.branch===branch)&&(!cls||l.cls===cls)
+  );
+  document.getElementById('lec-list').innerHTML=list.length
+    ?list.map(l=>`<div class="lec-card">
+        <div class="lec-top"><div class="lec-subj">${l.subj}</div><div class="lec-date">${l.date}</div></div>
+        <div class="lec-topic">${l.topic}${l.topicHi?` <span style="font-size:11px;color:var(--muted)">${l.topicHi}</span>`:''}</div>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          ${branchPill(l.branch)}<span class="badge b-navy">${l.cls}</span>
+          <a href="${l.url}" target="_blank" style="font-size:11px;color:var(--red);font-weight:700">▶ Watch</a>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-outline btn-sm" onclick="editLecture('${l.id}')">✏️ Edit</button>
+          <button class="btn btn-sm" style="background:var(--red-light);color:var(--red)" onclick="deleteLecture('${l.id}')">✕ Delete</button>
+        </div>
+      </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">🎥</div><div class="empty-en">No lectures posted yet</div><div class="empty-hi">कोई लेक्चर नहीं</div></div>`;
+}
+
+// ════════════════════════════════════
+// NOTIFICATIONS
+// ════════════════════════════════════
+function filterNotifs(f,el){
+  notifFilter=f;
+  document.querySelectorAll('#pg-notifications .ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderNotifications();
+}
+
+function renderNotifications(){
+  const t=currentTeacher;
+  let list=NOTIFICATIONS.filter(n=>n.teacherId===t.id||n.teacherId==='all');
+  if(notifFilter==='query') list=list.filter(n=>n.type==='query');
+  if(notifFilter==='system') list=list.filter(n=>n.type==='system');
+  document.getElementById('notif-list').innerHTML=list.length
+    ?list.map(n=>`<div class="notif-card ${n.read?'':'notif-new'}">
+        <div class="notif-icon">${n.type==='query'?'❓':'📢'}</div>
+        <div style="flex:1">
+          <div class="notif-text" style="font-weight:${n.read?'500':'700'}">${n.title}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${n.text}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">${n.date} · ${n.time}</div>
+        </div>
+        ${!n.read?'<span class="badge b-red">New</span>':''}
+      </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">🔔</div><div class="empty-en">No notifications</div></div>`;
+}
+
+function markNotifsRead(){
+  NOTIFICATIONS.filter(n=>n.teacherId===currentTeacher.id||n.teacherId==='all').forEach(n=>n.read=true);
+  saveLS('bei_teacher_notifs',NOTIFICATIONS);
+  updateBadges();
+}
+</script>
+</body>
+</html>

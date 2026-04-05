@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Brilliant Educational Institute — Student App</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --saffron:#FF6B00;--saffron-light:#FFF3E8;
+  --green:#138808;--green-light:#E8F5E9;
+  --navy:#1A237E;--navy-light:#E8EAF6;
+  --red:#C62828;--red-light:#FFEBEE;
+  --yellow:#F9A825;--yellow-light:#FFFDE7;
+  --bg:#F4F2EE;--card:#fff;--text:#1C1B1A;--muted:#6B6860;
+  --border:#E4E0D8;--radius:16px;--shadow:0 2px 16px rgba(0,0,0,.08);
+}
+[data-theme="dark"]{
+  --bg:#0F1117;--card:#1C1F2E;--text:#E8E6E1;--muted:#9B9890;
+  --border:#2C2F3E;--shadow:0 2px 14px rgba(0,0,0,.4);
+  --saffron-light:#2A1A0A;--navy-light:#1A1F3A;
+  --green-light:#0A1F0A;--red-light:#2A0A0A;--yellow-light:#2A200A;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Baloo 2','Noto Sans Devanagari',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;transition:background .2s,color .2s;}
+
+/* LOGIN */
+.login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--navy);}
+.login-emblem{width:72px;height:72px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;}
+.login-name{font-size:20px;font-weight:800;color:#FFD4AA;line-height:1.3;text-align:center;}
+.login-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;text-align:center;margin-bottom:32px;}
+.login-card{background:var(--card);border-radius:24px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.lang-toggle{display:flex;gap:8px;margin-bottom:20px;}
+.lang-btn{flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--muted);}
+.lang-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.flabel{font-size:12px;font-weight:700;color:var(--muted);}
+.finput{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;outline:none;transition:border-color .15s;width:100%;}
+.finput:focus{border-color:var(--saffron);}
+.login-btn{width:100%;padding:14px;background:var(--saffron);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;}
+.login-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.7;}
+.login-err{background:var(--red-light);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;}
+
+/* APP SHELL */
+.app-shell{display:none;min-height:100vh;flex-direction:column;}
+.app-shell.visible{display:flex;}
+
+/* HEADER */
+.app-header{background:var(--navy);padding:16px 20px 0;position:sticky;top:0;z-index:100;}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.header-greeting{font-size:12px;color:rgba(255,255,255,.6);}
+.header-name{font-size:17px;font-weight:800;color:#fff;line-height:1.2;}
+.header-meta{display:flex;gap:6px;align-items:center;margin-top:3px;flex-wrap:wrap;}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.pill-nk{background:rgba(255,107,0,.3);color:#FFD4AA;}
+.pill-rp{background:rgba(19,136,8,.3);color:#90EE90;}
+.pill-cls{background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);}
+.avatar{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#FFD4AA;flex-shrink:0;}
+.nav-tabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:10px 16px;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;flex-shrink:0;}
+.nav-tab.active{color:#fff;border-bottom-color:var(--saffron);}
+
+/* CONTENT */
+.app-content{flex:1;padding:16px 16px 90px;}
+.pg{display:none;}
+.pg.active{display:block;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 4px 18px;z-index:100;}
+.bni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 2px;border-radius:10px;}
+.bni.active{background:var(--saffron-light);}
+.bni-icon{font-size:20px;}
+.bni-label{font-size:9px;font-weight:600;color:var(--muted);}
+.bni.active .bni-label{color:var(--saffron);}
+
+/* HOME CARDS */
+.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.home-card{background:var(--card);border-radius:var(--radius);padding:18px 16px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;}
+.home-card:active{transform:scale(.97);}
+.hc-icon{font-size:28px;margin-bottom:8px;}
+.hc-title{font-size:13px;font-weight:700;color:var(--navy);}
+.hc-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* SECTION TITLE */
+.sec-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.sec-hi{font-size:11px;font-weight:400;color:var(--muted);}
+
+/* NOTICE */
+.notice-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:10px;border-left:4px solid var(--saffron);}
+.nc-date{font-size:10px;color:var(--muted);margin-bottom:6px;}
+.nc-text{font-size:14px;font-weight:500;line-height:1.5;}
+.nc-tag{font-size:10px;color:var(--navy);margin-top:6px;}
+
+/* FEE */
+.fee-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.fee-header{padding:16px;background:var(--navy);color:#fff;}
+.fee-body{padding:16px;}
+.fee-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.fee-row:last-child{border-bottom:none;}
+.fee-row-label{font-size:13px;color:var(--muted);}
+.fee-row-val{font-size:14px;font-weight:700;}
+.fee-progress{height:8px;background:var(--border);border-radius:4px;margin:12px 0;overflow:hidden;}
+.fee-progress-fill{height:100%;border-radius:4px;transition:width .5s;}
+
+/* PAYMENT ITEM */
+.pay-item{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.pay-no{font-size:11px;font-weight:700;color:var(--saffron);}
+.pay-date{font-size:11px;color:var(--muted);}
+.pay-amount{font-size:15px;font-weight:800;color:var(--green);}
+.pay-mode{font-size:10px;color:var(--muted);}
+
+/* ATTENDANCE */
+.att-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.att-stat{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:14px 10px;text-align:center;}
+.att-stat-val{font-size:22px;font-weight:800;line-height:1;}
+.att-stat-label{font-size:10px;color:var(--muted);margin-top:4px;}
+.att-subj-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:10px;}
+.att-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:6px 0;}
+.att-bar-fill{height:100%;border-radius:3px;}
+
+/* LECTURES */
+.lec-filter{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.lec-filter::-webkit-scrollbar{display:none;}
+.lec-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--card);border:1.5px solid var(--border);cursor:pointer;white-space:nowrap;color:var(--muted);}
+.lec-chip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.lec-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:10px;}
+.lec-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.lec-subj{font-size:11px;font-weight:700;color:var(--saffron);text-transform:uppercase;letter-spacing:.5px;}
+.lec-date{font-size:10px;color:var(--muted);}
+.lec-topic{font-size:14px;font-weight:700;color:var(--navy);line-height:1.3;}
+.lec-topic-hi{font-size:11px;color:var(--muted);margin-top:2px;}
+.lec-teacher{font-size:11px;color:var(--muted);margin-top:4px;}
+.lec-play-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--red);color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-top:10px;width:100%;}
+
+/* RESULTS */
+.exam-chips{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;}
+.exam-chip{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;background:var(--card);border:1.5px solid var(--border);cursor:pointer;white-space:nowrap;color:var(--muted);}
+.exam-chip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.result-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.result-header{background:var(--navy);padding:16px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
+.result-exam-name{font-size:14px;font-weight:700;}
+.result-rank{font-size:11px;opacity:.6;margin-top:4px;}
+.result-pct{font-size:30px;font-weight:800;color:#FFD4AA;}
+.result-body{padding:16px;}
+.subj-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px;}
+.subj-row:last-child{border-bottom:none;}
+.subj-name{font-size:13px;min-width:80px;}
+.subj-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.subj-bar-fill{height:100%;border-radius:3px;}
+.subj-marks{font-size:13px;font-weight:700;min-width:50px;text-align:right;}
+.result-total-row{background:var(--navy-light);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.result-total-label{font-size:13px;font-weight:700;color:var(--navy);}
+.result-total-val{font-size:15px;font-weight:800;color:var(--navy);}
+.status-badge{display:inline-block;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;}
+.status-pass{background:var(--green-light);color:var(--green);}
+.status-fail{background:var(--red-light);color:var(--red);}
+.download-btn{width:100%;padding:12px;background:var(--saffron);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* DARK TOGGLE */
+.dark-toggle{background:rgba(255,255,255,.12);border:none;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+/* QUERY */
+.query-form{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;}
+.query-form-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;}
+.query-subj-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.qchip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;background:var(--card);border:1.5px solid var(--border);cursor:pointer;color:var(--muted);transition:all .15s;}
+.qchip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.query-ta{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;min-height:90px;background:var(--bg);color:var(--text);}
+.query-ta:focus{border-color:var(--saffron);}
+.my-query-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:10px;border-left:4px solid var(--saffron);}
+.my-query-card.answered{border-left-color:var(--green);}
+.mq-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.mq-subj{font-size:11px;font-weight:700;color:var(--saffron);text-transform:uppercase;}
+.mq-status-answered{font-size:10px;font-weight:700;color:var(--green);}
+.mq-status-pending{font-size:10px;font-weight:700;color:var(--red);}
+.mq-q{font-size:13px;font-weight:500;line-height:1.5;color:var(--text);}
+.mq-response{background:var(--green-light);border-radius:8px;padding:10px 12px;margin-top:10px;}
+.mq-response-label{font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;}
+.mq-response-text{font-size:12px;line-height:1.5;color:var(--text);}
+.mq-pending-note{background:var(--yellow-light);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:11px;color:#b8860b;font-weight:600;}
+/* FINPUT dark mode fix */
+.finput{background:var(--card);color:var(--text);}
+.login-card{background:var(--card);}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-en{font-size:15px;font-weight:600;}
+.empty-hi{font-size:12px;opacity:.7;margin-top:4px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-emblem">🏫</div>
+  <div class="login-name">Brilliant Educational<br>Institute</div>
+  <div class="login-sub">Student Portal · छात्र पोर्टल</div>
+  <div class="login-card">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="lang-en" onclick="setLang('en')">🇬🇧 English</button>
+      <button class="lang-btn" id="lang-hi" onclick="setLang('hi')">🇮🇳 हिंदी</button>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <div class="fg">
+      <label class="flabel" id="lbl-id">Student ID</label>
+      <input class="finput" id="inp-id" placeholder="e.g. STU-NK-001" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase"/>
+    </div>
+    <div class="fg">
+      <label class="flabel" id="lbl-dob">Date of Birth / जन्मतिथि</label>
+      <input class="finput" type="date" id="inp-dob"/>
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Login / लॉगिन करें</button>
+    <div class="login-hint" id="login-hint">
+      Enter your Student ID and Date of Birth.<br>
+      अपना Student ID और जन्मतिथि दर्ज करें।<br><br>
+      <strong>No password needed · कोई पासवर्ड नहीं</strong>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app-shell" id="app-shell">
+  <div class="app-header">
+    <div class="header-top">
+      <div style="flex:1">
+        <div class="header-greeting" id="hdr-greeting">Good morning,</div>
+        <div class="header-name" id="hdr-name">—</div>
+        <div class="header-meta">
+          <span class="pill pill-cls" id="hdr-cls"></span>
+          <span class="pill" id="hdr-branch"></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="dark-toggle" onclick="toggleDark()" id="dark-btn">🌙</button>
+        <button onclick="setLang(lang==='en'?'hi':'en')" style="background:rgba(255,255,255,.15);border:none;color:#FFD4AA;font-size:12px;font-weight:700;padding:5px 10px;border-radius:20px;cursor:pointer;font-family:inherit">🌐 EN/HI</button>
+        <div class="avatar" id="hdr-avatar">?</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="showPg('home',this)">🏠 Home</div>
+      <div class="nav-tab" onclick="showPg('results',this)" id="tab-results">📝 Results</div>
+      <div class="nav-tab" onclick="showPg('lectures',this)" id="tab-lectures">🎥 Lectures</div>
+      <div class="nav-tab" onclick="showPg('attendance',this)" id="tab-att">✅ Attend.</div>
+      <div class="nav-tab" onclick="showPg('fees',this)" id="tab-fees">💰 Fees</div>
+      <div class="nav-tab" onclick="showPg('queries',this)" id="tab-queries">❓ Ask</div>
+    </div>
+  </div>
+
+  <div class="app-content">
+
+    <!-- HOME -->
+    <div class="pg active" id="pg-home">
+      <div id="fee-alert" style="display:none;background:var(--red-light);border:1.5px solid var(--red);border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--red)" id="fee-alert-text"></div>
+      </div>
+      <div class="home-cards">
+        <div class="home-card" onclick="showPg('results',null)">
+          <div class="hc-icon">📝</div>
+          <div class="hc-title" id="hc-results">Results</div>
+          <div class="hc-sub" id="hcs-results">View your marks</div>
+        </div>
+        <div class="home-card" onclick="showPg('lectures',null)">
+          <div class="hc-icon">🎥</div>
+          <div class="hc-title" id="hc-lectures">Lectures</div>
+          <div class="hc-sub" id="hcs-lectures">Watch class videos</div>
+        </div>
+        <div class="home-card" onclick="showPg('attendance',null)">
+          <div class="hc-icon">✅</div>
+          <div class="hc-title" id="hc-att">Attendance</div>
+          <div class="hc-sub" id="hcs-att">Your record</div>
+        </div>
+        <div class="home-card" onclick="showPg('fees',null)">
+          <div class="hc-icon">💰</div>
+          <div class="hc-title" id="hc-fees">Fees</div>
+          <div class="hc-sub" id="hcs-fees">Due & paid status</div>
+        </div>
+      </div>
+      <div class="sec-title">📢 <span id="sec-notices">Notices</span> <span class="sec-hi">सूचनाएं</span></div>
+      <div id="notices-container"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="pg" id="pg-results">
+      <div class="exam-chips" id="exam-chips"></div>
+      <div id="result-container"></div>
+    </div>
+
+    <!-- LECTURES -->
+    <div class="pg" id="pg-lectures">
+      <div class="lec-filter" id="lec-filter"></div>
+      <div id="lectures-container"></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="pg" id="pg-attendance">
+      <div class="att-summary" id="att-summary"></div>
+      <div class="sec-title" id="subj-att-title">📚 Subject-wise Attendance <span class="sec-hi">विषय-वार उपस्थिति</span></div>
+      <div id="att-subjects"></div>
+    </div>
+
+    <!-- FEES -->
+    <div class="pg" id="pg-fees">
+      <div class="fee-card">
+        <div class="fee-header">
+          <div style="font-size:14px;font-weight:700" id="fee-title">Fee Status · फीस की स्थिति</div>
+        </div>
+        <div class="fee-body" id="fee-body"></div>
+      </div>
+      <div class="sec-title" id="pay-hist-title">💳 Payment History <span class="sec-hi">भुगतान इतिहास</span></div>
+      <div id="pay-hist"></div>
+    </div>
+
+    <!-- QUERIES -->
+    <div class="pg" id="pg-queries">
+      <!-- Post a query -->
+      <div class="query-form">
+        <div class="query-form-title" id="qform-title">❓ Ask Your Teacher <span style="font-size:11px;font-weight:400;color:var(--muted)">/ शिक्षक से पूछें</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Select subject, type your doubt — your teacher will reply in-app or in next class.</div>
+        <div class="query-subj-chips" id="subj-chips"></div>
+        <textarea class="query-ta" id="query-ta" placeholder="Type your question here... / यहाँ प्रश्न लिखें..."></textarea>
+        <button onclick="postQuery()" style="width:100%;margin-top:10px;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">📤 Submit Question</button>
+      </div>
+      <!-- My queries -->
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px">📋 My Questions <span style="font-size:11px;font-weight:400;color:var(--muted)">/ मेरे प्रश्न</span></div>
+      <div id="my-queries"></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bni active" onclick="showPg('home',null);setBot(this)"><div class="bni-icon">🏠</div><div class="bni-label" id="bn-home">Home</div></div>
+    <div class="bni" onclick="showPg('results',null);setBot(this)"><div class="bni-icon">📝</div><div class="bni-label" id="bn-results">Results</div></div>
+    <div class="bni" onclick="showPg('lectures',null);setBot(this)"><div class="bni-icon">🎥</div><div class="bni-label" id="bn-lec">Lectures</div></div>
+    <div class="bni" onclick="showPg('fees',null);setBot(this)"><div class="bni-icon">💰</div><div class="bni-label" id="bn-fees">Fees</div></div>
+    <div class="bni" onclick="showPg('queries',null);setBot(this)"><div class="bni-icon">❓</div><div class="bni-label" id="bn-queries">Ask</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// DATA — replace with Google Sheets API
+// ══════════════════════════════════════
+const STUDENTS=[
+  {id:'STU-NK-001',name:'Rahul Kumar Sharma',dob:'2010-05-15',cls:'10th',batch:'Batch A',branch:'Narkatiya',phone:'9876543210',parent:'Rameshwar Sharma',totalFees:8000,paidFees:8000},
+  {id:'STU-NK-002',name:'Priya Yadav',dob:'2011-08-22',cls:'9th',batch:'Batch A',branch:'Narkatiya',phone:'9876543211',parent:'Sunil Yadav',totalFees:8000,paidFees:5000},
+  {id:'STU-NK-003',name:'Amit Kumar Singh',dob:'2009-12-10',cls:'11th',batch:'Batch B',branch:'Narkatiya',phone:'9876543212',parent:'Vijay Singh',totalFees:10000,paidFees:2000},
+  {id:'STU-RP-001',name:'Sonam Gupta',dob:'2012-03-18',cls:'8th',batch:'Batch A',branch:'Rampur',phone:'9876543213',parent:'Mahesh Gupta',totalFees:6000,paidFees:6000},
+  {id:'STU-RP-002',name:'Rohan Tiwari',dob:'2010-07-04',cls:'10th',batch:'Batch B',branch:'Rampur',phone:'9876543214',parent:'Keshav Tiwari',totalFees:8000,paidFees:4000},
+  {id:'STU-RP-003',name:'Anjali Mishra',dob:'2011-01-30',cls:'9th',batch:'Batch A',branch:'Rampur',phone:'9876543215',parent:'Arvind Mishra',totalFees:8000,paidFees:8000},
+  {id:'STU-RP-004',name:'Vikas Rai',dob:'2008-09-12',cls:'12th',batch:'Batch B',branch:'Rampur',phone:'9876543216',parent:'Suresh Rai',totalFees:12000,paidFees:6000},
+];
+const PAYMENTS={
+  'STU-NK-001':[{no:'#0001',amount:4000,mode:'Cash',date:'2024-04-01'},{no:'#0002',amount:4000,mode:'UPI',date:'2024-05-01',upi:'TXN123456'}],
+  'STU-NK-002':[{no:'#0003',amount:5000,mode:'Cash',date:'2024-04-03'}],
+  'STU-RP-001':[{no:'#0004',amount:6000,mode:'UPI',date:'2024-04-06',upi:'TXN789012'}],
+  'STU-RP-002':[{no:'#0005',amount:4000,mode:'Cash',date:'2024-04-08'}],
+  'STU-RP-004':[{no:'#0006',amount:6000,mode:'Cash',date:'2024-04-12'}],
+};
+const RESULTS={
+  'Mid-Term 2026':{subjects:['Maths','Science','Hindi','English','Social Sc.'],max:100,scores:{
+    'STU-NK-001':[88,75,92,70,85],'STU-NK-002':[62,70,88,55,72],'STU-NK-003':[45,52,78,48,61],
+    'STU-RP-001':[90,85,95,88,91],'STU-RP-002':[55,60,72,50,65],'STU-RP-003':[78,82,90,75,88],'STU-RP-004':[38,42,55,35,48],
+  }},
+  'Test-1':{subjects:['Maths','Science','Hindi','English','Social Sc.'],max:50,scores:{
+    'STU-NK-001':[44,38,47,35,42],'STU-NK-002':[30,35,44,28,36],'STU-NK-003':[22,26,39,24,30],
+    'STU-RP-001':[45,43,48,44,46],'STU-RP-002':[27,30,36,25,32],'STU-RP-003':[39,41,45,37,44],'STU-RP-004':[19,21,28,17,24],
+  }},
+};
+const LECTURES=[
+  {branch:'Narkatiya',cls:'10th',subj:'Maths',topic:'Quadratic Equations',topicHi:'द्विघात समीकरण',teacher:'Sh. Ramesh Kumar',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {branch:'Narkatiya',cls:'10th',subj:'Science',topic:'Laws of Motion',topicHi:'गति के नियम',teacher:'Sh. Ramesh Kumar',date:'2026-04-02',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {branch:'Narkatiya',cls:'9th',subj:'Maths',topic:'Triangles & Congruence',topicHi:'त्रिभुज और सर्वांगसमता',teacher:'Sh. Ramesh Kumar',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {branch:'Narkatiya',cls:'11th',subj:'Maths',topic:'Limits & Derivatives',topicHi:'सीमाएं और अवकलज',teacher:'Sh. Ramesh Kumar',date:'2026-04-01',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {branch:'Rampur',cls:'10th',subj:'Maths',topic:'Quadratic Equations',topicHi:'द्विघात समीकरण',teacher:'Sh. Ramesh Kumar',date:'2026-04-04',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {branch:'Rampur',cls:'9th',subj:'Hindi',topic:'Kabir Ke Dohe',topicHi:'कबीर के दोहे',teacher:'Smt. Sunita Devi',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {branch:'Rampur',cls:'8th',subj:'Science',topic:'Cell Structure',topicHi:'कोशिका संरचना',teacher:'Sh. Ramesh Kumar',date:'2026-04-02',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+  {branch:'Rampur',cls:'12th',subj:'Maths',topic:'Integration Basics',topicHi:'समाकलन का परिचय',teacher:'Sh. Ramesh Kumar',date:'2026-04-01',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
+];
+const ATTENDANCE={
+  'STU-NK-001':{total:80,present:72,subjects:{Maths:90,Science:85,Hindi:95,English:80,'Social Sc.':88}},
+  'STU-NK-002':{total:80,present:65,subjects:{Maths:78,Science:82,Hindi:90,English:75,'Social Sc.':80}},
+  'STU-NK-003':{total:80,present:58,subjects:{Maths:70,Science:72,Hindi:85,English:68,'Social Sc.':74}},
+  'STU-RP-001':{total:80,present:78,subjects:{Maths:95,Science:92,Hindi:98,English:90,'Social Sc.':94}},
+  'STU-RP-002':{total:80,present:60,subjects:{Maths:72,Science:78,Hindi:82,English:70,'Social Sc.':76}},
+  'STU-RP-003':{total:80,present:74,subjects:{Maths:88,Science:90,Hindi:94,English:85,'Social Sc.':90}},
+  'STU-RP-004':{total:80,present:52,subjects:{Maths:62,Science:65,Hindi:72,English:60,'Social Sc.':66}},
+};
+const NOTICES=[
+  {text:'Annual exam schedule will be announced on 15th April. All students check the notice board.',textHi:'वार्षिक परीक्षा का कार्यक्रम 15 अप्रैल को घोषित होगा। सभी छात्र सूचना पट्ट देखें।',branch:'all',cls:'all',date:'5 Apr 2026'},
+  {text:'Fee payment last date is 30th April. Pay on time to avoid late charges.',textHi:'फीस जमा करने की अंतिम तिथि 30 अप्रैल है। समय पर जमा करें।',branch:'all',cls:'all',date:'3 Apr 2026'},
+  {text:'Narkatiya Branch: Extra Maths class on Sunday 7th April at 10 AM. All students must attend.',textHi:'नरकटिया शाखा: रविवार 7 अप्रैल सुबह 10 बजे अतिरिक्त गणित कक्षा। सभी उपस्थित रहें।',branch:'Narkatiya',cls:'all',date:'2 Apr 2026'},
+  {text:'Rampur Branch: PTM (Parent-Teacher Meeting) on 12th April, 2 PM to 5 PM.',textHi:'रामपुर शाखा: अभिभावक-शिक्षक बैठक 12 अप्रैल, दोपहर 2 से 5 बजे।',branch:'Rampur',cls:'all',date:'1 Apr 2026'},
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let lang='en';
+let currentStudent=null;
+let currentExam='Mid-Term 2026';
+let currentLecSubj='All';
+let selectedQuerySubj='Maths';
+let isDark=localStorage.getItem('bei_student_dark')==='true';
+
+function loadLS(key,fallback){try{const d=localStorage.getItem(key);return d?JSON.parse(d):fallback;}catch{return fallback;}}
+function saveLS(key,data){try{localStorage.setItem(key,JSON.stringify(data));}catch{}}
+
+let QUERIES=loadLS('bei_queries',[
+  {id:'Q001',studentId:'STU-NK-001',studentName:'Rahul Kumar Sharma',branch:'Narkatiya',cls:'10th',subject:'Maths',question:'In quadratic equations, when do we use discriminant vs factoring?',date:'2026-04-04',time:'8:45 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'Great question Rahul! Use factoring first when roots look like integers. Discriminant b²−4ac: positive=2 roots, zero=1 root, negative=no real roots.',responseDate:'2026-04-05',responseTime:'7:20 AM',resolvedIn:'app'},
+  {id:'Q002',studentId:'STU-NK-002',studentName:'Priya Yadav',branch:'Narkatiya',cls:'9th',subject:'Hindi',question:'कबीर के दोहों में "माटी कहे कुम्हार से" का गहरा अर्थ क्या है?',date:'2026-04-04',time:'9:10 PM',status:'pending',teacherId:'TCH-002',teacherName:'Smt. Sunita Devi',response:null},
+  {id:'Q003',studentId:'STU-RP-002',studentName:'Rohan Tiwari',branch:'Rampur',cls:'10th',subject:'Maths',question:'I am confused about signs when completing the square.',date:'2026-04-03',time:'7:30 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'For x²+6x+5=0: Move constant, add 9 both sides, factor as (x+3)²=4, so x=−1 or −5.',responseDate:'2026-04-04',responseTime:'6:45 AM',resolvedIn:'class'},
+]);
+
+// Subject→Teacher mapping
+const SUBJ_TEACHER={
+  'Maths':{id:'TCH-001',name:'Sh. Ramesh Kumar'},
+  'Science':{id:'TCH-001',name:'Sh. Ramesh Kumar'},
+  'Hindi':{id:'TCH-002',name:'Smt. Sunita Devi'},
+  'Social Science':{id:'TCH-002',name:'Smt. Sunita Devi'},
+  'English':{id:'TCH-003',name:'Sh. Anil Pandey'},
+};
+
+// ══════════════════════════════════════
+// LANGUAGE STRINGS
+// ══════════════════════════════════════
+const T={
+  en:{
+    id_label:'Student ID',dob_label:'Date of Birth',login_btn:'Login',
+    greeting_morning:'Good morning,',greeting_afternoon:'Good afternoon,',greeting_evening:'Good evening,',
+    home:'Home',results:'Results',lectures:'Lectures',attendance:'Attendance',fees:'Fees',
+    hc_results:'Results',hcs_results:'View your marks',
+    hc_lectures:'Lectures',hcs_lectures:'Watch class videos',
+    hc_att:'Attendance',hcs_att:'Your record',
+    hc_fees:'Fees',hcs_fees:'Due & paid status',
+    notices:'Notices',no_notices:'No notices at this time',
+    result_title:'Your Results',
+    total:'Total',pct:'Percentage',pass:'Pass ✓',fail:'Fail',
+    rank:'Rank in class',
+    download_pdf:'⬇️ Download PDF Marksheet',
+    att_present:'Present',att_absent:'Absent',att_pct:'Attendance %',
+    subj_att:'Subject-wise Attendance',
+    fee_title:'Fee Status · फीस की स्थिति',
+    fee_annual:'Annual Fees',fee_paid:'Amount Paid',fee_due:'Balance Due',
+    fee_clear:'Fees Fully Paid ✓',
+    fee_due_alert:'⚠️ Fee Due: ',fee_due_msg:' — Please pay soon.',
+    pay_hist:'Payment History',no_pay:'No payments recorded yet',
+    no_results:'Results not published yet. Check back later.',
+    no_lec:'No lectures uploaded for your class yet.',
+    all:'All',watch:'Watch Video',
+  },
+  hi:{
+    id_label:'छात्र ID',dob_label:'जन्मतिथि',login_btn:'लॉगिन करें',
+    greeting_morning:'सुप्रभात,',greeting_afternoon:'नमस्ते,',greeting_evening:'शुभ संध्या,',
+    home:'होम',results:'परिणाम',lectures:'लेक्चर',attendance:'उपस्थिति',fees:'फीस',
+    hc_results:'परिणाम',hcs_results:'अपने अंक देखें',
+    hc_lectures:'लेक्चर',hcs_lectures:'वीडियो देखें',
+    hc_att:'उपस्थिति',hcs_att:'आपका रिकॉर्ड',
+    hc_fees:'फीस',hcs_fees:'बकाया और जमा',
+    notices:'सूचनाएं',no_notices:'अभी कोई सूचना नहीं',
+    result_title:'आपके परिणाम',
+    total:'कुल',pct:'प्रतिशत',pass:'उत्तीर्ण ✓',fail:'अनुत्तीर्ण',
+    rank:'कक्षा में रैंक',
+    download_pdf:'⬇️ PDF मार्कशीट डाउनलोड करें',
+    att_present:'उपस्थित',att_absent:'अनुपस्थित',att_pct:'उपस्थिति %',
+    subj_att:'विषय-वार उपस्थिति',
+    fee_title:'फीस की स्थिति · Fee Status',
+    fee_annual:'वार्षिक फीस',fee_paid:'जमा राशि',fee_due:'शेष बकाया',
+    fee_clear:'फीस पूर्ण जमा ✓',
+    fee_due_alert:'⚠️ फीस बकाया: ₹',fee_due_msg:' — कृपया जल्द जमा करें।',
+    pay_hist:'भुगतान इतिहास',no_pay:'कोई भुगतान दर्ज नहीं',
+    no_results:'परिणाम अभी प्रकाशित नहीं हुआ।',
+    no_lec:'आपकी कक्षा के लेक्चर अभी अपलोड नहीं हुए।',
+    all:'सभी',watch:'वीडियो देखें',
+  }
+};
+function t(k){return T[lang][k]||T.en[k]||k;}
+function inr(n){return '₹'+Number(n).toLocaleString('en-IN');}
+
+// ══════════════════════════════════════
+// LANG SWITCH
+// ══════════════════════════════════════
+function setLang(l){
+  lang=l;
+  document.getElementById('lang-en').classList.toggle('active',l==='en');
+  document.getElementById('lang-hi').classList.toggle('active',l==='hi');
+  document.getElementById('lbl-id').textContent=t('id_label');
+  document.getElementById('lbl-dob').textContent=t('dob_label');
+  document.getElementById('login-btn').textContent=t('login_btn');
+  if(currentStudent) refreshAppLang();
+}
+
+function refreshAppLang(){
+  const h=new Date().getHours();
+  const greet=h<12?t('greeting_morning'):h<17?t('greeting_afternoon'):t('greeting_evening');
+  document.getElementById('hdr-greeting').textContent=greet;
+  // home cards
+  document.getElementById('hc-results').textContent=t('hc_results');
+  document.getElementById('hcs-results').textContent=t('hcs_results');
+  document.getElementById('hc-lectures').textContent=t('hc_lectures');
+  document.getElementById('hcs-lectures').textContent=t('hcs_lectures');
+  document.getElementById('hc-att').textContent=t('hc_att');
+  document.getElementById('hcs-att').textContent=t('hcs_att');
+  document.getElementById('hc-fees').textContent=t('hc_fees');
+  document.getElementById('hcs-fees').textContent=t('hcs_fees');
+  // bottom nav
+  document.getElementById('bn-home').textContent=t('home');
+  document.getElementById('bn-results').textContent=t('results');
+  document.getElementById('bn-lec').textContent=t('lectures').slice(0,7);
+  document.getElementById('bn-att').textContent=t('attendance').slice(0,7)+'..';
+  document.getElementById('bn-fees').textContent=t('fees');
+  // fee alert
+  const s=currentStudent; const due=s.totalFees-s.paidFees;
+  if(due>0){
+    document.getElementById('fee-alert-text').textContent=t('fee_due_alert')+due.toLocaleString('en-IN')+t('fee_due_msg');
+  }
+  // re-render all pages
+  renderNotices();renderResults();renderLectures();renderAttendance();renderFees();
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+function toast(msg,dur=3000){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+// ══════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════
+function doLogin(){
+  const id=document.getElementById('inp-id').value.trim().toUpperCase();
+  const dob=document.getElementById('inp-dob').value;
+  const err=document.getElementById('login-err');
+  err.style.display='none';
+  if(!id||!dob){
+    err.textContent=lang==='hi'?'कृपया ID और जन्मतिथि दर्ज करें':'Please enter Student ID and Date of Birth';
+    err.style.display='block';return;
+  }
+  const stu=STUDENTS.find(s=>s.id===id&&s.dob===dob);
+  if(!stu){
+    err.textContent=lang==='hi'?'ID या जन्मतिथि गलत है। फिर से जाँचें।':'Incorrect Student ID or Date of Birth. Please check again.';
+    err.style.display='block';return;
+  }
+  currentStudent=stu;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-shell').classList.add('visible');
+  bootApp();
+}
+
+// Enter key on login
+document.getElementById('inp-dob').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('inp-id').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inp-dob').focus();});
+
+function bootApp(){
+  const s=currentStudent;
+  if(isDark){document.documentElement.setAttribute('data-theme','dark');document.getElementById('dark-btn').textContent='☀️';}
+  const h=new Date().getHours();
+  document.getElementById('hdr-greeting').textContent=h<12?t('greeting_morning'):h<17?t('greeting_afternoon'):t('greeting_evening');
+  document.getElementById('hdr-name').textContent=s.name;
+  document.getElementById('hdr-cls').textContent='Class '+s.cls;
+  const bp=document.getElementById('hdr-branch');
+  bp.textContent='📍 '+s.branch;
+  bp.className='pill '+(s.branch==='Narkatiya'?'pill-nk':'pill-rp');
+  const initials=s.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+  document.getElementById('hdr-avatar').textContent=initials;
+  // fee alert
+  const due=s.totalFees-s.paidFees;
+  if(due>0){
+    document.getElementById('fee-alert').style.display='block';
+    document.getElementById('fee-alert-text').textContent=t('fee_due_alert')+due.toLocaleString('en-IN')+t('fee_due_msg');
+  }
+  renderNotices();renderResults();renderLectures();renderAttendance();renderFees();renderQueriesPage();
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function showPg(name,tabEl){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  if(tabEl){tabEl.classList.add('active');}
+  else{
+    document.querySelectorAll('.nav-tab').forEach(tab=>{
+      if(tab.textContent.toLowerCase().includes(name.slice(0,4)))tab.classList.add('active');
+    });
+  }
+}
+function setBot(el){
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ══════════════════════════════════════
+// NOTICES
+// ══════════════════════════════════════
+function renderNotices(){
+  const s=currentStudent;
+  const relevant=NOTICES.filter(n=>(n.branch==='all'||n.branch===s.branch)&&(n.cls==='all'||n.cls===s.cls));
+  document.getElementById('notices-container').innerHTML=relevant.length
+    ?relevant.map(n=>`<div class="notice-card">
+        <div class="nc-date">${n.date}</div>
+        <div class="nc-text">${lang==='hi'&&n.textHi?n.textHi:n.text}</div>
+        <div class="nc-tag">📢 ${n.branch==='all'?'All Branches':'📍 '+n.branch} · ${n.cls==='all'?'All Classes':n.cls}</div>
+      </div>`).join('')
+    :`<div class="empty-state"><div class="empty-icon">📢</div><div class="empty-en">${t('no_notices')}</div></div>`;
+}
+
+// ══════════════════════════════════════
+// RESULTS
+// ══════════════════════════════════════
+function renderResults(){
+  const exams=Object.keys(RESULTS);
+  document.getElementById('exam-chips').innerHTML=exams.map(e=>
+    `<div class="exam-chip ${e===currentExam?'active':''}" onclick="selectExam('${e}',this)">${e}</div>`
+  ).join('');
+  showExamResult(currentExam);
+}
+
+function selectExam(exam,el){
+  currentExam=exam;
+  document.querySelectorAll('.exam-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  showExamResult(exam);
+}
+
+function showExamResult(exam){
+  const s=currentStudent;
+  const data=RESULTS[exam];
+  const con=document.getElementById('result-container');
+  if(!data||!data.scores[s.id]){
+    con.innerHTML=`<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-en">${t('no_results')}</div></div>`;
+    return;
+  }
+  const scores=data.scores[s.id];
+  const max=data.max;
+  const total=scores.reduce((a,b)=>a+b,0);
+  const totalMax=max*scores.length;
+  const pct=Math.round((total/totalMax)*100);
+  const pass=scores.every(m=>m>=max*0.33);
+  const pctColor=pct>=75?'#FFD4AA':pct>=50?'#FFB74D':'#EF9A9A';
+  // compute rank among same branch+class
+  const classmates=Object.entries(data.scores)
+    .filter(([sid])=>{const st=STUDENTS.find(x=>x.id===sid);return st&&st.branch===s.branch&&st.cls===s.cls;})
+    .map(([,sc])=>sc.reduce((a,b)=>a+b,0)).sort((a,b)=>b-a);
+  const rank=classmates.indexOf(total)+1;
+
+  con.innerHTML=`<div class="result-card">
+    <div class="result-header">
+      <div>
+        <div class="result-exam-name">${exam}</div>
+        <div class="result-rank">${t('rank')}: #${rank} · ${s.branch} Branch · ${s.cls}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="result-pct">${pct}%</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6)">${t('pct')}</div>
+      </div>
+    </div>
+    <div class="result-body">
+      ${data.subjects.map((subj,i)=>{
+        const m=scores[i];const p=Math.round((m/max)*100);
+        const c=m>=max*.75?'var(--green)':m>=max*.33?'var(--saffron)':'var(--red)';
+        return `<div class="subj-row">
+          <div class="subj-name">${subj}</div>
+          <div class="subj-bar"><div class="subj-bar-fill" style="width:${p}%;background:${c}"></div></div>
+          <div class="subj-marks" style="color:${c}">${m}/${max}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="result-total-row">
+      <div class="result-total-label">${t('total')} · ${t('pct')}</div>
+      <div class="result-total-val">${total}/${totalMax} · ${pct}%</div>
+    </div>
+    <div style="padding:12px 16px 4px">
+      <span class="status-badge ${pass?'status-pass':'status-fail'}">${pass?t('pass'):t('fail')}</span>
+    </div>
+    <div style="padding:0 16px 16px">
+      <button class="download-btn" onclick="downloadPDF('${exam}')">${t('download_pdf')}</button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════
+// PDF DOWNLOAD
+// ══════════════════════════════════════
+function downloadPDF(exam){
+  const s=currentStudent;
+  const data=RESULTS[exam];
+  if(!data||!data.scores[s.id]){toast('Results not available for download');return;}
+  toast('⏳ Generating PDF...');
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'mm',format:'a4'});
+    const scores=data.scores[s.id];
+    const max=data.max;
+    const total=scores.reduce((a,b)=>a+b,0);
+    const totalMax=max*scores.length;
+    const pct=Math.round((total/totalMax)*100);
+    const pass=scores.every(m=>m>=max*0.33);
+    const today=new Date().toLocaleDateString('en-IN');
+
+    // header bg
+    doc.setFillColor(26,35,126);doc.rect(0,0,210,45,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(18);doc.setFont('helvetica','bold');
+    doc.text('Brilliant Educational Institute',105,15,{align:'center'});
+    doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.text('Narkatiya Branch & Rampur Branch',105,22,{align:'center'});
+    doc.setFontSize(15);doc.setFont('helvetica','bold');
+    doc.text('MARKSHEET / RESULT CARD',105,34,{align:'center'});
+
+    // stamp area
+    doc.setDrawColor(26,35,126);doc.setLineWidth(0.5);
+    doc.roundedRect(148,48,58,32,3,3,'S');
+    doc.setTextColor(26,35,126);doc.setFontSize(8);doc.setFont('helvetica','normal');
+    doc.text('OFFICIAL SEAL',177,56,{align:'center'});
+    doc.text('Brilliant Educational',177,63,{align:'center'});
+    doc.text('Institute',177,69,{align:'center'});
+
+    // student info
+    doc.setTextColor(30,30,30);doc.setFontSize(10);
+    const info=[
+      ['Student Name',s.name],['Student ID',s.id],
+      ['Class / Batch',s.cls+' — '+s.batch],
+      ['Branch','📍 '+s.branch],['Exam / परीक्षा',exam],
+      ['Date / तिथि',today],
+    ];
+    let y=52;
+    info.forEach(([lbl,val])=>{
+      doc.setFont('helvetica','bold');doc.text(lbl+':',15,y);
+      doc.setFont('helvetica','normal');doc.text(String(val),65,y);
+      y+=7;
+    });
+
+    // marks table header
+    y=95;
+    doc.setFillColor(26,35,126);doc.rect(15,y-5,180,9,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text('Subject',20,y);
+    doc.text('Marks',100,y,{align:'center'});
+    doc.text('Max',130,y,{align:'center'});
+    doc.text('%',158,y,{align:'center'});
+    doc.text('Grade',183,y,{align:'center'});
+    y+=4;
+
+    doc.setTextColor(30,30,30);
+    data.subjects.forEach((subj,i)=>{
+      y+=9;
+      const m=scores[i];const sp=Math.round((m/max)*100);
+      const grade=sp>=90?'A+':sp>=75?'A':sp>=60?'B+':sp>=50?'B':sp>=33?'C':'F';
+      doc.setFillColor(i%2===0?245:255,i%2===0?245:255,i%2===0?245:255);
+      doc.rect(15,y-6,180,9,'F');
+      doc.setFont('helvetica','normal');
+      doc.text(subj,20,y);
+      doc.text(String(m),100,y,{align:'center'});
+      doc.text(String(max),130,y,{align:'center'});
+      doc.text(sp+'%',158,y,{align:'center'});
+      doc.setFont('helvetica','bold');doc.text(grade,183,y,{align:'center'});
+    });
+
+    // total
+    y+=12;
+    doc.setFillColor(26,35,126);doc.rect(15,y-6,180,10,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);
+    doc.text('TOTAL',20,y);
+    doc.text(total+' / '+totalMax,100,y,{align:'center'});
+    doc.text(pct+'%',158,y,{align:'center'});
+
+    // result status
+    y+=16;
+    const sc=pass?[19,136,8]:[198,40,40];
+    doc.setFillColor(...sc);doc.roundedRect(70,y-6,70,12,2,2,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(13);
+    doc.text(pass?'RESULT: PASS':'RESULT: FAIL',105,y+2,{align:'center'});
+
+    // footer
+    y+=24;
+    doc.setDrawColor(200,200,200);doc.setLineWidth(0.3);doc.line(15,y,195,y);
+    doc.setTextColor(120,120,120);doc.setFontSize(8);doc.setFont('helvetica','normal');
+    doc.text('This is a computer-generated marksheet. For queries, contact the institute.',105,y+6,{align:'center'});
+    doc.text('Brilliant Educational Institute — Narkatiya & Rampur Branches',105,y+11,{align:'center'});
+
+    doc.save('Marksheet_'+s.name.replace(/\s+/g,'_')+'_'+exam.replace(/\s+/g,'_')+'.pdf');
+    setTimeout(()=>toast('✅ PDF downloaded successfully!'),500);
+  }catch(e){
+    console.error(e);toast('Error generating PDF. Try again.');
+  }
+}
+
+// ══════════════════════════════════════
+// LECTURES
+// ══════════════════════════════════════
+function renderLectures(){
+  const s=currentStudent;
+  const myLec=LECTURES.filter(l=>l.branch===s.branch&&l.cls===s.cls);
+  const subjects=[t('all'),...new Set(myLec.map(l=>l.subj))];
+  document.getElementById('lec-filter').innerHTML=subjects.map((subj,i)=>
+    `<div class="lec-chip ${(i===0&&currentLecSubj==='All')||subj===currentLecSubj?'active':''}" onclick="filterLec('${subj==='सभी'||subj==='All'?'All':subj}',this)">${subj}</div>`
+  ).join('');
+  const filtered=currentLecSubj==='All'?myLec:myLec.filter(l=>l.subj===currentLecSubj);
+  document.getElementById('lectures-container').innerHTML=filtered.length
+    ?filtered.map(l=>`<div class="lec-card">
+        <div class="lec-top"><div class="lec-subj">${l.subj}</div><div class="lec-date">${l.date}</div></div>
+        <div class="lec-topic">${l.topic}</div>
+        ${lang==='hi'&&l.topicHi?`<div class="lec-topic-hi">${l.topicHi}</div>`:''}
+        <div class="lec-teacher">👩‍🏫 ${l.teacher}</div>
+        <button class="lec-play-btn" onclick="window.open('${l.url}','_blank')">▶ ${t('watch')}</button>
+      </div>`).join('')
+    :`<div class="empty-state"><div class="empty-icon">🎥</div><div class="empty-en">${t('no_lec')}</div></div>`;
+}
+
+function filterLec(subj,el){
+  currentLecSubj=subj;
+  document.querySelectorAll('.lec-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderLectures();
+}
+
+// ══════════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════════
+function renderAttendance(){
+  const s=currentStudent;
+  const att=ATTENDANCE[s.id]||{total:80,present:0,subjects:{}};
+  const absent=att.total-att.present;
+  const pct=att.total?Math.round((att.present/att.total)*100):0;
+  const pctColor=pct>=75?'var(--green)':pct>=50?'var(--saffron)':'var(--red)';
+  document.getElementById('att-summary').innerHTML=`
+    <div class="att-stat"><div class="att-stat-val" style="color:var(--green)">${att.present}</div><div class="att-stat-label">${t('att_present')}</div></div>
+    <div class="att-stat"><div class="att-stat-val" style="color:var(--red)">${absent}</div><div class="att-stat-label">${t('att_absent')}</div></div>
+    <div class="att-stat"><div class="att-stat-val" style="color:${pctColor}">${pct}%</div><div class="att-stat-label">${t('att_pct')}</div></div>`;
+  document.getElementById('subj-att-title').innerHTML=`📚 ${t('subj_att')} <span class="sec-hi">विषय-वार उपस्थिति</span>`;
+  document.getElementById('att-subjects').innerHTML=Object.entries(att.subjects).map(([subj,p])=>{
+    const c=p>=75?'var(--green)':p>=50?'var(--saffron)':'var(--red)';
+    const warn=p<75?'⚠️ '+(lang==='hi'?'उपस्थिति कम है':'Attendance low'):'✅ '+(lang==='hi'?'अच्छी उपस्थिति':'Good attendance');
+    return `<div class="att-subj-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:700">${subj}</div>
+        <div style="font-size:15px;font-weight:800;color:${c}">${p}%</div>
+      </div>
+      <div class="att-bar"><div class="att-bar-fill" style="width:${p}%;background:${c}"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">${warn}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// DARK MODE
+// ══════════════════════════════════════
+function toggleDark(){
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme',isDark?'dark':'');
+  document.getElementById('dark-btn').textContent=isDark?'☀️':'🌙';
+  localStorage.setItem('bei_student_dark',isDark);
+  toast(isDark?'🌙 Dark mode on':'☀️ Light mode on');
+}
+
+// ══════════════════════════════════════
+// QUERIES
+// ══════════════════════════════════════
+const SUBJECTS=['Maths','Science','Hindi','English','Social Science'];
+
+function renderQueriesPage(){
+  const s=currentStudent;
+  // Subject chips
+  document.getElementById('subj-chips').innerHTML=SUBJECTS.map(subj=>
+    `<div class="qchip ${subj===selectedQuerySubj?'active':''}" onclick="selectQSubj('${subj}',this)">${subj}</div>`
+  ).join('');
+  // My queries
+  const myQ=QUERIES.filter(q=>q.studentId===s.id).sort((a,b)=>b.id.localeCompare(a.id));
+  document.getElementById('my-queries').innerHTML=myQ.length
+    ?myQ.map(q=>`<div class="my-query-card ${q.status==='answered'?'answered':''}">
+        <div class="mq-top">
+          <span class="mq-subj">${q.subject}</span>
+          <span class="${q.status==='answered'?'mq-status-answered':'mq-status-pending'}">${q.status==='answered'?'✅ Answered':'⏳ Pending'}</span>
+        </div>
+        <div class="mq-q">${q.question}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:5px">${q.date} · ${q.time||''}</div>
+        ${q.response?`<div class="mq-response">
+          <div class="mq-response-label">👩‍🏫 ${q.teacherName} replied · ${q.responseDate||''}${q.resolvedIn?' ('+q.resolvedIn+')':''}</div>
+          <div class="mq-response-text">${q.response}</div>
+        </div>`:`<div class="mq-pending-note">⏳ ${lang==='hi'?'शिक्षक जल्द उत्तर देंगे। कक्षा में भी पूछ सकते हैं।':'Your teacher will reply soon, or address it in next class.'}</div>`}
+      </div>`).join('')
+    :`<div class="empty-state"><div class="empty-icon">❓</div><div class="empty-en">No questions posted yet</div><div class="empty-hi">कोई प्रश्न नहीं पूछा गया</div></div>`;
+}
+
+function selectQSubj(subj,el){
+  selectedQuerySubj=subj;
+  document.querySelectorAll('.qchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function postQuery(){
+  const s=currentStudent;
+  const text=document.getElementById('query-ta').value.trim();
+  if(!text){toast('⚠️ Please write your question first');return;}
+  if(text.length<10){toast('⚠️ Please describe your doubt in more detail');return;}
+  const teacher=SUBJ_TEACHER[selectedQuerySubj]||{id:'TCH-001',name:'Sh. Ramesh Kumar'};
+  const now=new Date();
+  const q={
+    id:'Q'+String(Date.now()).slice(-6),
+    studentId:s.id,studentName:s.name,
+    branch:s.branch,cls:s.cls,
+    subject:selectedQuerySubj,question:text,
+    date:now.toLocaleDateString('en-IN'),
+    time:now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    status:'pending',
+    teacherId:teacher.id,teacherName:teacher.name,
+    response:null,responseDate:null,
+  };
+  QUERIES.unshift(q);
+  saveLS('bei_queries',QUERIES);
+  document.getElementById('query-ta').value='';
+  renderQueriesPage();
+  toast(`✅ Question sent to ${teacher.name}! They will reply soon.`);
+}
+
+function renderFees(){
+  const s=currentStudent;
+  const due=s.totalFees-s.paidFees;
+  const pct=Math.round((s.paidFees/s.totalFees)*100);
+  const pctColor=pct>=100?'var(--green)':pct>=50?'var(--saffron)':'var(--red)';
+  document.getElementById('fee-title').textContent=t('fee_title');
+  document.getElementById('fee-body').innerHTML=`
+    <div class="fee-row"><div class="fee-row-label">${t('fee_annual')}</div><div class="fee-row-val">${inr(s.totalFees)}</div></div>
+    <div class="fee-row"><div class="fee-row-label">${t('fee_paid')}</div><div class="fee-row-val" style="color:var(--green)">${inr(s.paidFees)}</div></div>
+    <div class="fee-row"><div class="fee-row-label">${t('fee_due')}</div><div class="fee-row-val" style="color:${due>0?'var(--red)':'var(--green)'}">${due>0?inr(due):t('fee_clear')}</div></div>
+    <div class="fee-progress"><div class="fee-progress-fill" style="width:${pct}%;background:${pctColor}"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
+      <span>0%</span><span style="font-weight:700;color:${pctColor}">${pct}% paid</span><span>100%</span>
+    </div>
+    ${due>0?`<div style="background:var(--red-light);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:13px;font-weight:600;color:var(--red)">${t('fee_due_msg')}</div>`:''}`;
+  document.getElementById('pay-hist-title').innerHTML=`💳 ${t('pay_hist')} <span class="sec-hi">भुगतान इतिहास</span>`;
+  const myPay=PAYMENTS[s.id]||[];
+  document.getElementById('pay-hist').innerHTML=myPay.length
+    ?[...myPay].reverse().map(p=>`<div class="pay-item">
+        <div>
+          <div class="pay-no">${p.no}</div>
+          <div class="pay-date">${p.date}</div>
+          ${p.upi?`<div style="font-size:10px;color:var(--muted)">UPI: ${p.upi}</div>`:''}
+        </div>
+        <div style="text-align:right">
+          <div class="pay-amount">${inr(p.amount)}</div>
+          <div class="pay-mode">${p.mode}</div>
+        </div>
+      </div>`).join('')
+    :`<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-en">${t('no_pay')}</div></div>`;
+}
+</script>
+</body>
+</html>

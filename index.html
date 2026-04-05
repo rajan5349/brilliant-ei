@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Brilliant Educational Institute</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Baloo 2',sans-serif;background:#0F1117;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.logo{font-size:56px;margin-bottom:16px;}
+.institute-name{font-size:24px;font-weight:800;color:#FFD4AA;text-align:center;line-height:1.3;margin-bottom:8px;}
+.tagline{font-size:13px;color:rgba(255,255,255,.45);text-align:center;margin-bottom:48px;}
+.cards{display:grid;grid-template-columns:1fr;gap:14px;width:100%;max-width:360px;}
+.portal-card{background:#1C1F2E;border:1px solid #2C2F3E;border-radius:16px;padding:22px 20px;cursor:pointer;transition:all .2s;text-decoration:none;display:block;}
+.portal-card:hover{border-color:#FF6B00;transform:translateY(-2px);}
+.portal-card:active{transform:scale(.98);}
+.card-icon{font-size:32px;margin-bottom:10px;}
+.card-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:4px;}
+.card-sub{font-size:12px;color:rgba(255,255,255,.45);line-height:1.5;}
+.card-arrow{font-size:18px;color:#FF6B00;float:right;margin-top:-32px;}
+.divider{width:100%;max-width:360px;border:none;border-top:1px solid #2C2F3E;margin:20px 0;}
+.footer{font-size:11px;color:rgba(255,255,255,.25);text-align:center;}
+.branch-pills{display:flex;gap:8px;justify-content:center;margin-bottom:32px;}
+.pill{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.pill-nk{background:rgba(255,107,0,.2);color:#FFD4AA;}
+.pill-rp{background:rgba(19,136,8,.2);color:#90EE90;}
+</style>
+</head>
+<body>
+<div class="logo">🏫</div>
+<div class="institute-name">Brilliant Educational<br>Institute</div>
+<div class="tagline">Narkatiya & Rampur Branches</div>
+<div class="branch-pills">
+  <span class="pill pill-nk">📍 Narkatiya</span>
+  <span class="pill pill-rp">📍 Rampur</span>
+</div>
+
+<div class="cards">
+  <a class="portal-card" href="./student.html">
+    <div class="card-icon">👨‍🎓</div>
+    <div class="card-title">Student Portal</div>
+    <div class="card-sub">Results · Lectures · Attendance · Fee Status · Ask Teacher</div>
+    <div class="card-arrow">→</div>
+  </a>
+  <a class="portal-card" href="./teacher.html">
+    <div class="card-icon">👩‍🏫</div>
+    <div class="card-title">Teacher Portal</div>
+    <div class="card-sub">Attendance · Student Queries · Post Lectures · Notifications</div>
+    <div class="card-arrow">→</div>
+  </a>
+  <a class="portal-card" href="./admin.html">
+    <div class="card-icon">⚙️</div>
+    <div class="card-title">Admin Panel</div>
+    <div class="card-sub">Students · Fees · Attendance · Results · Full Management</div>
+    <div class="card-arrow">→</div>
+  </a>
+</div>
+
+<hr class="divider"/>
+<div class="footer">Brilliant Educational Institute · All rights reserved</div>
+</body>
+</html>
