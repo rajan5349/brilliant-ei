@@ -19,6 +19,21 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Baloo 2','Noto Sans Devanagari',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+body.login-blocked{overflow:hidden;}
+.admin-login-screen{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.admin-login-card{width:100%;max-width:420px;background:#0f1f4a;border-radius:24px;padding:32px;box-shadow:0 35px 80px rgba(0,0,0,.45);text-align:center;border:1px solid rgba(255,255,255,.08);}
+.admin-login-card .logo-badge{color:rgba(255,255,255,.7);letter-spacing:2px;margin-bottom:16px;}
+.admin-login-card h2{font-size:22px;margin-bottom:10px;color:#fff;}
+.admin-login-card p{color:rgba(255,255,255,.75);margin-bottom:22px;line-height:1.6;}
+.admin-password-field{position:relative;margin-bottom:16px;}
+.admin-login-input{width:100%;padding:14px 16px;border:1.5px solid rgba(255,255,255,.15);border-radius:14px;font-size:15px;font-family:inherit;outline:none;background:rgba(255,255,255,.08);color:#fff;}
+.admin-login-input::placeholder{color:rgba(255,255,255,.6);}
+.admin-pass-toggle{position:absolute;top:50%;right:14px;transform:translateY(-50%);background:transparent;border:none;color:rgba(255,255,255,.85);font-size:13px;font-weight:700;cursor:pointer;padding:6px 8px;border-radius:10px;}
+.admin-pass-toggle:hover{background:rgba(255,255,255,.1);}
+.admin-login-btn{width:100%;padding:14px 0;background:#ff8c2e;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 12px 28px rgba(255,140,46,.25);}
+.admin-login-btn:hover{background:#ff9f4d;}
+.admin-login-error{color:#ffa3a3;font-size:13px;margin-bottom:12px;display:none;}
+.admin-login-help{font-size:12px;color:rgba(255,255,255,.6);margin-top:10px;}
 
 /* SIDEBAR */
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--navy);color:#fff;display:flex;flex-direction:column;z-index:300;transition:transform .25s;}
@@ -226,8 +241,20 @@ tr:hover td{background:var(--saffron-light);}
 @media(max-width:380px){.att-grid{grid-template-columns:1fr;}}
 </style>
 </head>
-<body>
-
+<body class="login-blocked">
+<div class="admin-login-screen" id="admin-login-screen">
+  <div class="admin-login-card">
+    <div class="logo-badge">Admin Login</div>
+    <h2>Enter password to continue</h2>
+    <div class="admin-login-error" id="admin-login-error"></div>
+    <div class="admin-password-field">
+      <input type="password" id="admin-password" class="admin-login-input" placeholder="Password" onkeydown="if(event.key==='Enter')submitAdminLogin()" autocomplete="current-password"/>
+      <button type="button" class="admin-pass-toggle" id="admin-pass-toggle" onclick="toggleAdminPassword()">Show</button>
+    </div>
+    <button type="button" class="admin-login-btn" onclick="submitAdminLogin()">Unlock Dashboard</button>
+    <div class="admin-login-help">If you are the admin, enter your password to continue.</div>
+  </div>
+</div>
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
 <!-- SIDEBAR -->
@@ -616,36 +643,101 @@ tr:hover td{background:var(--saffron-light);}
 // ══════════════════════════════════
 // DATA
 // ══════════════════════════════════
-let students = [
-  {id:'STU-NK-001',name:'Rahul Kumar Sharma',dob:'2010-05-15',cls:'10th',batch:'Batch A',branch:'Narkatiya',phone:'9876543210',parent:'Rameshwar Sharma',address:'Rampur, Patna',totalFees:8000,paidFees:8000,date:'2024-04-01'},
-  {id:'STU-NK-002',name:'Priya Yadav',dob:'2011-08-22',cls:'9th',batch:'Batch A',branch:'Narkatiya',phone:'9876543211',parent:'Sunil Yadav',address:'Sitapur, Patna',totalFees:8000,paidFees:5000,date:'2024-04-03'},
-  {id:'STU-NK-003',name:'Amit Kumar Singh',dob:'2009-12-10',cls:'11th',batch:'Batch B',branch:'Narkatiya',phone:'9876543212',parent:'Vijay Singh',address:'Mokama, Patna',totalFees:10000,paidFees:2000,date:'2024-04-05'},
-  {id:'STU-RP-001',name:'Sonam Gupta',dob:'2012-03-18',cls:'8th',batch:'Batch A',branch:'Rampur',phone:'9876543213',parent:'Mahesh Gupta',address:'Bakhtiyarpur',totalFees:6000,paidFees:6000,date:'2024-04-06'},
-  {id:'STU-RP-002',name:'Rohan Tiwari',dob:'2010-07-04',cls:'10th',batch:'Batch B',branch:'Rampur',phone:'9876543214',parent:'Keshav Tiwari',address:'Fatuha, Patna',totalFees:8000,paidFees:4000,date:'2024-04-08'},
-  {id:'STU-RP-003',name:'Anjali Mishra',dob:'2011-01-30',cls:'9th',batch:'Batch A',branch:'Rampur',phone:'9876543215',parent:'Arvind Mishra',address:'Danapur',totalFees:8000,paidFees:8000,date:'2024-04-10'},
-  {id:'STU-RP-004',name:'Vikas Rai',dob:'2008-09-12',cls:'12th',batch:'Batch B',branch:'Rampur',phone:'9876543216',parent:'Suresh Rai',address:'Naubatpur',totalFees:12000,paidFees:6000,date:'2024-04-12'},
-];
-let payments = [
-  {no:'#0001',sid:'STU-NK-001',amount:4000,mode:'Cash',date:'2024-04-01',upi:''},
-  {no:'#0002',sid:'STU-NK-001',amount:4000,mode:'UPI',date:'2024-05-01',upi:'TXN123456'},
-  {no:'#0003',sid:'STU-NK-002',amount:5000,mode:'Cash',date:'2024-04-03',upi:''},
-  {no:'#0004',sid:'STU-RP-001',amount:6000,mode:'UPI',date:'2024-04-06',upi:'TXN789012'},
-];
-let lectures = [
-  {date:'2026-04-03',branch:'Narkatiya',cls:'10th',subj:'Maths',topic:'Quadratic Equations / द्विघात समीकरण',teacher:'Sh. Ramesh Kumar',url:'https://youtube.com/watch?v=ex1'},
-  {date:'2026-04-03',branch:'Rampur',cls:'9th',subj:'Science',topic:'Force & Motion / बल और गति',teacher:'Sh. Ramesh Kumar',url:'https://youtube.com/watch?v=ex2'},
-];
-let teachers = [
-  {id:'TCH-001',name:'Sh. Ramesh Kumar',subj:'Maths, Science',classes:'9th, 10th, 11th, 12th',phone:'9800000001',pin:'1234',qual:'M.Sc Physics'},
-  {id:'TCH-002',name:'Smt. Sunita Devi',subj:'Hindi, Social Science',classes:'6th, 7th, 8th, 9th',phone:'9800000002',pin:'5678',qual:'M.A. Hindi'},
-  {id:'TCH-003',name:'Sh. Anil Pandey',subj:'English',classes:'All classes',phone:'9800000003',pin:'9012',qual:'M.A. English'},
-];
+let students = [];
+let payments = [];
+let lectures = [];
+let teachers = [];
+
+const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbyrrLcMyMWe8A99avNH5HyZpvtKJKq9ZifCn50YqeCI2vCaCCNQtdfLNDmtSk0nfzdZ0A/exec'; // Set your deployed Apps Script Web App URL here.
+const SHEETS = {Students:'Students',Payments:'Payments',Lectures:'Lectures',Teachers:'Teachers',Notices:'Notices',Queries:'Queries',Notifications:'Notifications',Attendance:'Attendance'};
+
+async function remoteSheetRequest(action, sheetName, payload){
+  if(!SHEETS_API_URL) throw new Error('Sheets backend not configured');
+  const url = `${SHEETS_API_URL}?action=${encodeURIComponent(action)}&sheet=${encodeURIComponent(sheetName)}`;
+  const options = payload ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)} : {method:'GET'};
+  const res = await fetch(url, options);
+  if(!res.ok) throw new Error(`Sheet request failed ${res.status}`);
+  return res.json();
+}
+
+async function loadSheetData(sheetName, fallback){
+  if(!SHEETS_API_URL) return fallback;
+  try{
+    const rows = await remoteSheetRequest('read', sheetName);
+    if(Array.isArray(rows) && rows.length) return rows;
+  }catch(err){console.warn('Sheet load failed',sheetName,err);}
+  return fallback;
+}
+
+async function saveSheetData(sheetName, data){
+  if(!SHEETS_API_URL) return false;
+  try{ await remoteSheetRequest('write', sheetName, {rows:data}); return true;}catch(err){console.warn('Sheet save failed',sheetName,err); return false; }
+}
+
+function parsePaymentsRows(rows){
+  if(!Array.isArray(rows) || !rows.length) return payments;
+  const parsed = [];
+  rows.forEach(r=>{
+    const sid = r.sid || r.studentId || r.StudentId;
+    if(!sid) return;
+    parsed.push({
+      no: r.no || r.No || '',
+      sid,
+      amount: Number(r.amount || r.Amount || 0),
+      mode: r.mode || r.Mode || 'Cash',
+      date: r.date || r.Date || '',
+      upi: r.upi || r.Upi || ''
+    });
+  });
+  return parsed.length ? parsed : payments;
+}
+
+async function initAdmin(){
+  if(!SHEETS_API_URL){ refreshAll(); return; }
+  students = await loadSheetData(SHEETS.Students, students);
+  payments = parsePaymentsRows(await loadSheetData(SHEETS.Payments, []));
+  lectures = await loadSheetData(SHEETS.Lectures, lectures);
+  teachers = await loadSheetData(SHEETS.Teachers, teachers);
+  notices = await loadSheetData(SHEETS.Notices, notices);
+  refreshAll();
+}
+
 let notices = [];
 let attState = {};
 let activeStu = null;
 let nextRec = 5;
 let editingLec = null;
 let currentPage = 'dashboard';
+const ADMIN_PASSWORD = 'admin@123';
+
+function submitAdminLogin(){
+  const input = document.getElementById('admin-password');
+  const error = document.getElementById('admin-login-error');
+  const value = input.value.trim();
+  if(!value){
+    error.textContent = 'Password is required';
+    error.style.display = 'block';
+    return;
+  }
+  if(value !== ADMIN_PASSWORD){
+    error.textContent = 'Incorrect password. Please try again.';
+    error.style.display = 'block';
+    return;
+  }
+  error.style.display = 'none';
+  document.getElementById('admin-login-screen').style.display = 'none';
+  document.body.classList.remove('login-blocked');
+  toast('Welcome, Admin');
+}
+function toggleAdminPassword(){
+  const input = document.getElementById('admin-password');
+  const btn = document.getElementById('admin-pass-toggle');
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Hide' : 'Show';
+  input.focus();
+}
+
 
 // ══════════════════════════════════
 // INIT
@@ -657,7 +749,7 @@ document.getElementById('att-date').value = now.toISOString().split('T')[0];
 document.getElementById('l-date').value = now.toISOString().split('T')[0];
 document.getElementById('s-date').value = now.toISOString().split('T')[0];
 
-refreshAll();
+initAdmin();
 
 // ══════════════════════════════════
 // HELPERS
@@ -904,6 +996,7 @@ function addStudent(){
     address:document.getElementById('s-address').value,
     totalFees:parseInt(document.getElementById('s-fees').value)||8000,
     paidFees:0,date:document.getElementById('s-date').value||now.toISOString().split('T')[0]});
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Students, students).catch(()=>{}); }
   ['s-name','s-dob','s-phone','s-parent','s-address','s-fees'].forEach(i=>document.getElementById(i).value='');
   closeModal('modal-student');
   refreshAll();
@@ -1006,6 +1099,7 @@ function collectFee(){
   const rno='#'+String(nextRec++).padStart(4,'0');
   const today=now.toISOString().split('T')[0];
   payments.push({no:rno,sid:s.id,amount:amt,mode,date:today,upi});
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Payments, payments).catch(()=>{}); saveSheetData(SHEETS.Students, students).catch(()=>{}); }
   closeModal('modal-fee');
   refreshAll();
   const due=s.totalFees-s.paidFees;
@@ -1068,6 +1162,26 @@ function saveAtt(){
   if(!branch||!cls){toast('⚠️ Select branch and class first');return;}
   const p=Object.values(attState).filter(v=>v==='P').length;
   const total=Object.keys(attState).length;
+  
+  // Save individual attendance records for each student
+  const attendanceRecords = [];
+  Object.keys(attState).forEach(studentId => {
+    const status = attState[studentId];
+    const present = status === 'P' ? 1 : 0;
+    attendanceRecords.push({
+      studentId,
+      total: 1, // One class session
+      present,
+      subject: subj,
+      score: present * 100, // 100% if present, 0% if absent
+      date,
+      branch,
+      cls,
+      teacher
+    });
+  });
+  
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Attendance, attendanceRecords).catch(()=>{}); }
   toast(`✅ Attendance saved — ${branch} | ${cls} | ${subj} | ${date} | Teacher: ${teacher||'—'} (${p}/${total} present)`);
 }
 
@@ -1242,6 +1356,7 @@ function addTeacher(){
     qual:document.getElementById('t-qual').value.trim(),
     addr:document.getElementById('t-addr').value.trim()
   });
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Teachers, teachers).catch(()=>{}); }
   ['t-name','t-subj','t-classes','t-phone','t-pin','t-qual','t-addr'].forEach(i=>document.getElementById(i).value='');
   closeModal('modal-teacher');
   renderTeachers();
@@ -1253,6 +1368,7 @@ function addTeacher(){
 function removeTeacher(id){
   if(!confirm('Remove this teacher? Their name will be cleared from lecture records.'))return;
   teachers=teachers.filter(t=>t.id!==id);
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Teachers, teachers).catch(()=>{}); }
   renderTeachers();
   refreshTeacherDropdowns();
   renderDashboard();
@@ -1268,6 +1384,7 @@ function postNotice(){
   const branch=document.getElementById('notice-branch').value;
   const cls=document.getElementById('notice-cls').value;
   notices.unshift({txt,branch,cls,date:now.toLocaleDateString('en-IN')});
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Notices, notices).catch(()=>{}); }
   document.getElementById('notice-txt').value='';
   renderNotices();
   toast('✅ Notice posted!');
