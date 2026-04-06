@@ -536,24 +536,20 @@ function toast(msg,dur=3000){
 // ══════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════
-function doLogin(){
-  const id=document.getElementById('inp-id').value.trim().toUpperCase();
-  const dob=document.getElementById('inp-dob').value;
-  const err=document.getElementById('login-err');
-  err.style.display='none';
-  if(!id||!dob){
-    err.textContent=lang==='hi'?'कृपया ID और जन्मतिथि दर्ज करें':'Please enter Student ID and Date of Birth';
-    err.style.display='block';return;
+async function doLogin() {
+  const id = document.getElementById("inp-id").value.toUpperCase();
+  const dob = document.getElementById("inp-dob").value;
+
+  const res = await fetch("https://sheetdb.io/api/v1/iat3rnpemn4rd");
+  const data = await res.json();
+
+  const user = data.find(s => s.id === id && s.dob === dob);
+
+  if (user) {
+    alert("Login success");
+  } else {
+    alert("Wrong ID or DOB");
   }
-  const stu=STUDENTS.find(s=>s.id===id&&s.dob===dob);
-  if(!stu){
-    err.textContent=lang==='hi'?'ID या जन्मतिथि गलत है। फिर से जाँचें।':'Incorrect Student ID or Date of Birth. Please check again.';
-    err.style.display='block';return;
-  }
-  currentStudent=stu;
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-shell').classList.add('visible');
-  bootApp();
 }
 
 // Enter key on login
