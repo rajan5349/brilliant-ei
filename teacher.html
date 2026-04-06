@@ -412,43 +412,67 @@ body{font-family:'Baloo 2','Noto Sans Devanagari',sans-serif;background:var(--bg
 
 <script>
 // ════════════════════════════════════
-// SHARED DATA (embedded copy — in production replace with API)
+// SHARED DATA (Google Sheets backend only)
 // ════════════════════════════════════
-const STUDENTS=[
-  {id:'STU-NK-001',name:'Rahul Kumar Sharma',dob:'2010-05-15',cls:'10th',batch:'Batch A',branch:'Narkatiya'},
-  {id:'STU-NK-002',name:'Priya Yadav',dob:'2011-08-22',cls:'9th',batch:'Batch A',branch:'Narkatiya'},
-  {id:'STU-NK-003',name:'Amit Kumar Singh',dob:'2009-12-10',cls:'11th',batch:'Batch B',branch:'Narkatiya'},
-  {id:'STU-RP-001',name:'Sonam Gupta',dob:'2012-03-18',cls:'8th',batch:'Batch A',branch:'Rampur'},
-  {id:'STU-RP-002',name:'Rohan Tiwari',dob:'2010-07-04',cls:'10th',batch:'Batch B',branch:'Rampur'},
-  {id:'STU-RP-003',name:'Anjali Mishra',dob:'2011-01-30',cls:'9th',batch:'Batch A',branch:'Rampur'},
-  {id:'STU-RP-004',name:'Vikas Rai',dob:'2008-09-12',cls:'12th',batch:'Batch B',branch:'Rampur'},
-];
+let STUDENTS = [];
+let TEACHERS = [];
 
-const TEACHERS=[
-  {id:'TCH-001',name:'Sh. Ramesh Kumar',subj:'Maths, Science',classes:'9th,10th,11th,12th',phone:'9800000001',pin:'1234',qual:'M.Sc Physics'},
-  {id:'TCH-002',name:'Smt. Sunita Devi',subj:'Hindi, Social Science',classes:'6th,7th,8th,9th',phone:'9800000002',pin:'5678',qual:'M.A. Hindi'},
-  {id:'TCH-003',name:'Sh. Anil Pandey',subj:'English',classes:'All',phone:'9800000003',pin:'9012',qual:'M.A. English'},
-];
+const SHEETS_API_URL='https://script.google.com/macros/s/AKfycbyrrLcMyMWe8A99avNH5HyZpvtKJKq9ZifCn50YqeCI2vCaCCNQtdfLNDmtSk0nfzdZ0A/exec'; // Set your deployed Apps Script Web App URL here.
+const SHEETS={Students:'Students',Teachers:'Teachers',Queries:'Queries',Lectures:'Lectures',Notifications:'Notifications',Attendance:'Attendance'};
+
+async function remoteSheetRequest(action, sheetName, payload){
+  if(!SHEETS_API_URL) throw new Error('Sheets backend not configured');
+  const url = `${SHEETS_API_URL}?action=${encodeURIComponent(action)}&sheet=${encodeURIComponent(sheetName)}`;
+  const options = payload ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)} : {method:'GET'};
+  const res = await fetch(url, options);
+  if(!res.ok) throw new Error(`Sheet request failed ${res.status}`);
+  return res.json();
+}
+
+async function loadSheetData(sheetName, fallback){
+  if(!SHEETS_API_URL) return fallback;
+  try{
+    const rows = await remoteSheetRequest('read', sheetName);
+    if(Array.isArray(rows) && rows.length) return rows;
+  }catch(err){console.warn('Sheet load failed',sheetName,err);}
+  return fallback;
+}
+
+async function saveSheetData(sheetName, data){
+  if(!SHEETS_API_URL) return false;
+  try{ await remoteSheetRequest('write', sheetName, {rows:data}); return true;}catch(err){console.warn('Sheet save failed',sheetName,err); return false; }
+}
+
+function renderTeacherChips(){
+  document.getElementById('teacher-chips').innerHTML=TEACHERS.map(t=>`
+    <div class="teacher-chip" onclick="selectTeacher('${t.id}')">
+      <div><div class="tc-name">${t.name}</div><div class="tc-sub">${t.subj}</div></div>
+      <div class="tc-id">${t.id}</div>
+    </div>`).join('');
+}
+
+async function initTeacherApp(){
+  if(!SHEETS_API_URL) return;
+  STUDENTS = await loadSheetData(SHEETS.Students, STUDENTS);
+  TEACHERS = await loadSheetData(SHEETS.Teachers, TEACHERS);
+  const queryRows = await loadSheetData(SHEETS.Queries, QUERIES);
+  if(queryRows.length) QUERIES = queryRows;
+  const lectureRows = await loadSheetData(SHEETS.Lectures, LECTURES);
+  if(lectureRows.length) LECTURES = lectureRows;
+  const notifRows = await loadSheetData(SHEETS.Notifications, NOTIFICATIONS);
+  if(notifRows.length) NOTIFICATIONS = notifRows;
+  renderTeacherChips();
+}
 
 // Load persisted data
 function loadLS(key,fallback){try{const d=localStorage.getItem(key);return d?JSON.parse(d):fallback;}catch{return fallback;}}
 function saveLS(key,data){try{localStorage.setItem(key,JSON.stringify(data));}catch{}}
 
-let QUERIES=loadLS('bei_queries',[
-  {id:'Q001',studentId:'STU-NK-001',studentName:'Rahul Kumar Sharma',branch:'Narkatiya',cls:'10th',subject:'Maths',question:'In quadratic equations, when do we use discriminant vs factoring?',date:'2026-04-04',time:'8:45 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'Great question Rahul! Use factoring first when roots look like integers. If not obvious in 30 sec, use quadratic formula. Discriminant b²−4ac: positive=2 roots, zero=1 root, negative=no real roots.',responseDate:'2026-04-05',responseTime:'7:20 AM',resolvedIn:'app'},
-  {id:'Q002',studentId:'STU-NK-002',studentName:'Priya Yadav',branch:'Narkatiya',cls:'9th',subject:'Hindi',question:'कबीर के दोहों में "माटी कहे कुम्हार से" का गहरा अर्थ क्या है?',date:'2026-04-04',time:'9:10 PM',status:'pending',teacherId:'TCH-002',teacherName:'Smt. Sunita Devi',response:null,responseDate:null},
-  {id:'Q003',studentId:'STU-RP-002',studentName:'Rohan Tiwari',branch:'Rampur',cls:'10th',subject:'Maths',question:'I am confused about signs when completing the square. Step by step example please.',date:'2026-04-03',time:'7:30 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'For x²+6x+5=0: Move constant→x²+6x=−5, Add 9 both sides→(x+3)²=4, So x=−1 or x=−5. Covering in class too!',responseDate:'2026-04-04',responseTime:'6:45 AM',resolvedIn:'class'},
-  {id:'Q004',studentId:'STU-RP-004',studentName:'Vikas Rai',branch:'Rampur',cls:'12th',subject:'Maths',question:'Integration by parts — how to choose u and dv? The LIATE rule confuses me.',date:'2026-04-05',time:'6:00 PM',status:'pending',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:null,responseDate:null},
-]);
+let QUERIES=loadLS('bei_queries',[]);
 
-let LECTURES=loadLS('bei_lectures',[
-  {id:'LEC-001',branch:'Narkatiya',cls:'10th',subj:'Maths',topic:'Quadratic Equations',topicHi:'द्विघात समीकरण',teacherId:'TCH-001',teacher:'Sh. Ramesh Kumar',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {id:'LEC-002',branch:'Narkatiya',cls:'10th',subj:'Science',topic:'Laws of Motion',topicHi:'गति के नियम',teacherId:'TCH-001',teacher:'Sh. Ramesh Kumar',date:'2026-04-02',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {id:'LEC-003',branch:'Rampur',cls:'9th',subj:'Hindi',topic:'Kabir Ke Dohe',topicHi:'कबीर के दोहे',teacherId:'TCH-002',teacher:'Smt. Sunita Devi',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-]);
+let LECTURES=loadLS('bei_lectures',[]);
 
-let NOTIFICATIONS=loadLS('bei_teacher_notifs',[
-  {id:'N001',type:'query',teacherId:'TCH-001',title:'New query from Rahul (10th)',text:'About quadratic equations',date:'2026-04-04',time:'8:45 PM',read:true},
+let NOTIFICATIONS=loadLS('bei_teacher_notifs',[]);
   {id:'N002',type:'query',teacherId:'TCH-002',title:'New query from Priya (9th)',text:'About Kabir ke dohe',date:'2026-04-04',time:'9:10 PM',read:false},
   {id:'N003',type:'system',teacherId:'all',title:'Admin: Exam schedule updated',text:'Mid-term results published',date:'2026-04-03',time:'5:00 PM',read:true},
   {id:'N004',type:'query',teacherId:'TCH-001',title:'New query from Vikas (12th)',text:'About integration by parts',date:'2026-04-05',time:'6:00 PM',read:false},
@@ -468,12 +492,8 @@ const today=new Date().toISOString().split('T')[0];
 document.getElementById('att-date').value=today;
 document.getElementById('l-date').value=today;
 
-// Render teacher quick-select chips
-document.getElementById('teacher-chips').innerHTML=TEACHERS.map(t=>`
-  <div class="teacher-chip" onclick="selectTeacher('${t.id}')">
-    <div><div class="tc-name">${t.name}</div><div class="tc-sub">${t.subj}</div></div>
-    <div class="tc-id">${t.id}</div>
-  </div>`).join('');
+renderTeacherChips();
+initTeacherApp();
 
 if(isDark) document.documentElement.setAttribute('data-theme','dark');
 document.getElementById('dark-btn').textContent=isDark?'☀️':'🌙';
@@ -669,6 +689,7 @@ function replyQuery(qid,method){
   q.resolvedIn=method;
   q.teacherName=currentTeacher.name;
   saveLS('bei_queries',QUERIES);
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Queries, QUERIES).catch(()=>{}); }
   updateBadges();
   renderQueries();
   renderDashboard();
@@ -713,10 +734,32 @@ function saveAtt(){
   const date=document.getElementById('att-date').value;
   const p=Object.values(attState).filter(v=>v==='P').length;
   const total=Object.keys(attState).length;
-  const record={branch,cls,subj,date,teacher:currentTeacher.name,teacherId:currentTeacher.id,present:p,total,state:{...attState}};
-  const saved=loadLS('bei_teacher_att',[]);
-  saved.push(record);
-  saveLS('bei_teacher_att',saved);
+  
+  // Save individual attendance records for each student
+  const attendanceRecords = [];
+  Object.keys(attState).forEach(studentId => {
+    const status = attState[studentId];
+    const present = status === 'P' ? 1 : 0;
+    attendanceRecords.push({
+      studentId,
+      total: 1, // One class session
+      present,
+      subject: subj,
+      score: present * 100, // 100% if present, 0% if absent
+      date,
+      branch,
+      cls,
+      teacherId: currentTeacher.id,
+      teacher: currentTeacher.name
+    });
+  });
+  
+  // Load existing attendance and add new records
+  const existingAttendance = loadLS('bei_teacher_att', []);
+  const updatedAttendance = existingAttendance.concat(attendanceRecords);
+  saveLS('bei_teacher_att', updatedAttendance);
+  
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Attendance, updatedAttendance).catch(()=>{}); }
   toast(`✅ Attendance saved — ${branch} · ${cls} · ${subj} (${p}/${total} present)`);
 }
 
@@ -746,6 +789,7 @@ function saveLecture(){
     toast('✅ Lecture posted! Students can now watch it.');
   }
   saveLS('bei_lectures',LECTURES);
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Lectures, LECTURES).catch(()=>{}); }
   cancelLec();
   renderLectures();
   renderDashboard();
@@ -839,6 +883,7 @@ function renderNotifications(){
 function markNotifsRead(){
   NOTIFICATIONS.filter(n=>n.teacherId===currentTeacher.id||n.teacherId==='all').forEach(n=>n.read=true);
   saveLS('bei_teacher_notifs',NOTIFICATIONS);
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Notifications, NOTIFICATIONS).catch(()=>{}); }
   updateBadges();
 }
 </script>
