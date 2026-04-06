@@ -540,18 +540,17 @@ async function doLogin() {
   const id = document.getElementById("inp-id").value.trim();
   const dobInput = document.getElementById("inp-dob").value;
 
-  const res = await fetch("https://sheetdb.io/api/v1/iat3rnpemn4rd");
+  const res = await fetch("https://sheetdb.io/api/v1/iat3rnpemm4rd");
   const data = await res.json();
 
-  const user = data.find(s => {
-    const sheetDOB = new Date(s.dob).toISOString().split("T")[0];
-    return s.id == id && sheetDOB === dobInput;
-  });
+  const user = data.find(s => 
+    s.id == id && s.dob === dobInput
+  );
 
   if (user) {
     alert("Login success ✅");
   } else {
-    console.log("Sheet data:", data); // debugging
+    console.log("Sheet:", data);
     alert("Wrong ID or DOB ❌");
   }
 }
