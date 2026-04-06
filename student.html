@@ -537,18 +537,22 @@ function toast(msg,dur=3000){
 // LOGIN
 // ══════════════════════════════════════
 async function doLogin() {
-  const id = document.getElementById("inp-id").value.toUpperCase();
-  const dob = document.getElementById("inp-dob").value;
+  const id = document.getElementById("inp-id").value.trim();
+  const dobInput = document.getElementById("inp-dob").value;
 
   const res = await fetch("https://sheetdb.io/api/v1/iat3rnpemn4rd");
   const data = await res.json();
 
-  const user = data.find(s => s.id === id && s.dob === dob);
+  const user = data.find(s => {
+    const sheetDOB = new Date(s.dob).toISOString().split("T")[0];
+    return s.id == id && sheetDOB === dobInput;
+  });
 
   if (user) {
-    alert("Login success");
+    alert("Login success ✅");
   } else {
-    alert("Wrong ID or DOB");
+    console.log("Sheet data:", data); // debugging
+    alert("Wrong ID or DOB ❌");
   }
 }
 
