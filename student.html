@@ -345,59 +345,106 @@ body{font-family:'Baloo 2','Noto Sans Devanagari',sans-serif;background:var(--bg
 
 <script>
 // ══════════════════════════════════════
-// DATA — replace with Google Sheets API
+// DATA — Google Sheets backend only
 // ══════════════════════════════════════
-const STUDENTS=[
-  {id:'STU-NK-001',name:'Rahul Kumar Sharma',dob:'2010-05-15',cls:'10th',batch:'Batch A',branch:'Narkatiya',phone:'9876543210',parent:'Rameshwar Sharma',totalFees:8000,paidFees:8000},
-  {id:'STU-NK-002',name:'Priya Yadav',dob:'2011-08-22',cls:'9th',batch:'Batch A',branch:'Narkatiya',phone:'9876543211',parent:'Sunil Yadav',totalFees:8000,paidFees:5000},
-  {id:'STU-NK-003',name:'Amit Kumar Singh',dob:'2009-12-10',cls:'11th',batch:'Batch B',branch:'Narkatiya',phone:'9876543212',parent:'Vijay Singh',totalFees:10000,paidFees:2000},
-  {id:'STU-RP-001',name:'Sonam Gupta',dob:'2012-03-18',cls:'8th',batch:'Batch A',branch:'Rampur',phone:'9876543213',parent:'Mahesh Gupta',totalFees:6000,paidFees:6000},
-  {id:'STU-RP-002',name:'Rohan Tiwari',dob:'2010-07-04',cls:'10th',batch:'Batch B',branch:'Rampur',phone:'9876543214',parent:'Keshav Tiwari',totalFees:8000,paidFees:4000},
-  {id:'STU-RP-003',name:'Anjali Mishra',dob:'2011-01-30',cls:'9th',batch:'Batch A',branch:'Rampur',phone:'9876543215',parent:'Arvind Mishra',totalFees:8000,paidFees:8000},
-  {id:'STU-RP-004',name:'Vikas Rai',dob:'2008-09-12',cls:'12th',batch:'Batch B',branch:'Rampur',phone:'9876543216',parent:'Suresh Rai',totalFees:12000,paidFees:6000},
-];
-const PAYMENTS={
-  'STU-NK-001':[{no:'#0001',amount:4000,mode:'Cash',date:'2024-04-01'},{no:'#0002',amount:4000,mode:'UPI',date:'2024-05-01',upi:'TXN123456'}],
-  'STU-NK-002':[{no:'#0003',amount:5000,mode:'Cash',date:'2024-04-03'}],
-  'STU-RP-001':[{no:'#0004',amount:6000,mode:'UPI',date:'2024-04-06',upi:'TXN789012'}],
-  'STU-RP-002':[{no:'#0005',amount:4000,mode:'Cash',date:'2024-04-08'}],
-  'STU-RP-004':[{no:'#0006',amount:6000,mode:'Cash',date:'2024-04-12'}],
-};
-const RESULTS={
-  'Mid-Term 2026':{subjects:['Maths','Science','Hindi','English','Social Sc.'],max:100,scores:{
-    'STU-NK-001':[88,75,92,70,85],'STU-NK-002':[62,70,88,55,72],'STU-NK-003':[45,52,78,48,61],
-    'STU-RP-001':[90,85,95,88,91],'STU-RP-002':[55,60,72,50,65],'STU-RP-003':[78,82,90,75,88],'STU-RP-004':[38,42,55,35,48],
-  }},
-  'Test-1':{subjects:['Maths','Science','Hindi','English','Social Sc.'],max:50,scores:{
-    'STU-NK-001':[44,38,47,35,42],'STU-NK-002':[30,35,44,28,36],'STU-NK-003':[22,26,39,24,30],
-    'STU-RP-001':[45,43,48,44,46],'STU-RP-002':[27,30,36,25,32],'STU-RP-003':[39,41,45,37,44],'STU-RP-004':[19,21,28,17,24],
-  }},
-};
-const LECTURES=[
-  {branch:'Narkatiya',cls:'10th',subj:'Maths',topic:'Quadratic Equations',topicHi:'द्विघात समीकरण',teacher:'Sh. Ramesh Kumar',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {branch:'Narkatiya',cls:'10th',subj:'Science',topic:'Laws of Motion',topicHi:'गति के नियम',teacher:'Sh. Ramesh Kumar',date:'2026-04-02',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {branch:'Narkatiya',cls:'9th',subj:'Maths',topic:'Triangles & Congruence',topicHi:'त्रिभुज और सर्वांगसमता',teacher:'Sh. Ramesh Kumar',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {branch:'Narkatiya',cls:'11th',subj:'Maths',topic:'Limits & Derivatives',topicHi:'सीमाएं और अवकलज',teacher:'Sh. Ramesh Kumar',date:'2026-04-01',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {branch:'Rampur',cls:'10th',subj:'Maths',topic:'Quadratic Equations',topicHi:'द्विघात समीकरण',teacher:'Sh. Ramesh Kumar',date:'2026-04-04',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {branch:'Rampur',cls:'9th',subj:'Hindi',topic:'Kabir Ke Dohe',topicHi:'कबीर के दोहे',teacher:'Smt. Sunita Devi',date:'2026-04-03',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {branch:'Rampur',cls:'8th',subj:'Science',topic:'Cell Structure',topicHi:'कोशिका संरचना',teacher:'Sh. Ramesh Kumar',date:'2026-04-02',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-  {branch:'Rampur',cls:'12th',subj:'Maths',topic:'Integration Basics',topicHi:'समाकलन का परिचय',teacher:'Sh. Ramesh Kumar',date:'2026-04-01',url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'},
-];
-const ATTENDANCE={
-  'STU-NK-001':{total:80,present:72,subjects:{Maths:90,Science:85,Hindi:95,English:80,'Social Sc.':88}},
-  'STU-NK-002':{total:80,present:65,subjects:{Maths:78,Science:82,Hindi:90,English:75,'Social Sc.':80}},
-  'STU-NK-003':{total:80,present:58,subjects:{Maths:70,Science:72,Hindi:85,English:68,'Social Sc.':74}},
-  'STU-RP-001':{total:80,present:78,subjects:{Maths:95,Science:92,Hindi:98,English:90,'Social Sc.':94}},
-  'STU-RP-002':{total:80,present:60,subjects:{Maths:72,Science:78,Hindi:82,English:70,'Social Sc.':76}},
-  'STU-RP-003':{total:80,present:74,subjects:{Maths:88,Science:90,Hindi:94,English:85,'Social Sc.':90}},
-  'STU-RP-004':{total:80,present:52,subjects:{Maths:62,Science:65,Hindi:72,English:60,'Social Sc.':66}},
-};
-const NOTICES=[
-  {text:'Annual exam schedule will be announced on 15th April. All students check the notice board.',textHi:'वार्षिक परीक्षा का कार्यक्रम 15 अप्रैल को घोषित होगा। सभी छात्र सूचना पट्ट देखें।',branch:'all',cls:'all',date:'5 Apr 2026'},
-  {text:'Fee payment last date is 30th April. Pay on time to avoid late charges.',textHi:'फीस जमा करने की अंतिम तिथि 30 अप्रैल है। समय पर जमा करें।',branch:'all',cls:'all',date:'3 Apr 2026'},
-  {text:'Narkatiya Branch: Extra Maths class on Sunday 7th April at 10 AM. All students must attend.',textHi:'नरकटिया शाखा: रविवार 7 अप्रैल सुबह 10 बजे अतिरिक्त गणित कक्षा। सभी उपस्थित रहें।',branch:'Narkatiya',cls:'all',date:'2 Apr 2026'},
-  {text:'Rampur Branch: PTM (Parent-Teacher Meeting) on 12th April, 2 PM to 5 PM.',textHi:'रामपुर शाखा: अभिभावक-शिक्षक बैठक 12 अप्रैल, दोपहर 2 से 5 बजे।',branch:'Rampur',cls:'all',date:'1 Apr 2026'},
-];
+let STUDENTS = [];
+let PAYMENTS = {};
+let RESULTS = {};
+let LECTURES = [];
+let ATTENDANCE = {};
+let NOTICES = [];
+
+// ══════════════════════════════════════
+// GOOGLE SHEETS BACKEND HELPERS
+// ══════════════════════════════════════
+const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbyrrLcMyMWe8A99avNH5HyZpvtKJKq9ZifCn50YqeCI2vCaCCNQtdfLNDmtSk0nfzdZ0A/exec'; // Set your deployed Apps Script Web App URL here.
+const SHEETS = {Students:'Students',Payments:'Payments',Results:'Results',Lectures:'Lectures',Attendance:'Attendance',Notices:'Notices',Queries:'Queries',Teachers:'Teachers',Notifications:'Notifications'};
+
+async function remoteSheetRequest(action, sheetName, payload){
+  if(!SHEETS_API_URL) throw new Error('Sheets backend not configured');
+  const url = `${SHEETS_API_URL}?action=${encodeURIComponent(action)}&sheet=${encodeURIComponent(sheetName)}`;
+  const options = payload ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)} : {method:'GET'};
+  const res = await fetch(url, options);
+  if(!res.ok) throw new Error(`Sheet request failed ${res.status}`);
+  return res.json();
+}
+
+async function loadSheetData(sheetName, fallback){
+  if(!SHEETS_API_URL) return fallback;
+  try{
+    const rows = await remoteSheetRequest('read', sheetName);
+    if(Array.isArray(rows) && rows.length) return rows;
+  }catch(err){console.warn('Sheet load failed',sheetName,err);}
+  return fallback;
+}
+
+async function saveSheetData(sheetName, data){
+  if(!SHEETS_API_URL) return false;
+  try{ await remoteSheetRequest('write', sheetName, {rows:data}); return true; }catch(err){console.warn('Sheet save failed',sheetName,err); return false; }
+}
+
+function parseResultsRows(rows){
+  if(!Array.isArray(rows) || !rows.length || !rows[0].exam) return RESULTS;
+  const parsed = {};
+  rows.forEach(r=>{
+    const exam=r.exam||r.Exam||r.ExamName;
+    const subj=r.subject||r.Subject;
+    const sid=r.studentId||r.StudentId||r.sid;
+    const score=Number(r.score||r.Score||0);
+    const max=Number(r.max||r.Max||100);
+    if(!exam||!subj||!sid) return;
+    if(!parsed[exam]) parsed[exam]={subjects:[],max,max,scores:{}};
+    if(!parsed[exam].subjects.includes(subj)) parsed[exam].subjects.push(subj);
+    parsed[exam].max = Math.max(parsed[exam].max, max);
+    parsed[exam].scores[sid] = parsed[exam].scores[sid] || [];
+    parsed[exam].scores[sid].push(score);
+  });
+  return parsed;
+}
+
+function parseAttendanceRows(rows){
+  if(!Array.isArray(rows) || !rows.length || !rows[0].studentId) return ATTENDANCE;
+  const map = {};
+  rows.forEach(r=>{
+    const sid=r.studentId||r.StudentId||r.sid;
+    if(!sid) return;
+    const total=Number(r.total||r.Total||0);
+    const present=Number(r.present||r.Present||0);
+    const subject=r.subject||r.Subject;
+    const score=Number(r.score||r.Score||0);
+    if(!map[sid]) map[sid]={total:0,present:0,subjects:{}};
+    map[sid].total += total;
+    map[sid].present += present;
+    if(subject && score !== undefined) map[sid].subjects[subject] = score;
+  });
+  return map;
+}
+
+async function initStudentApp(){
+  if(!SHEETS_API_URL) return;
+  STUDENTS = await loadSheetData(SHEETS.Students, STUDENTS);
+  const paymentRows = await loadSheetData(SHEETS.Payments, []);
+  if(paymentRows.length){
+    const loaded = {};
+    paymentRows.forEach(r=>{
+      const sid=r.sid||r.studentId||r.StudentId;
+      if(!sid) return;
+      loaded[sid] = loaded[sid]||[];
+      loaded[sid].push({no:r.no||'',amount:Number(r.amount||0),mode:r.mode||'',date:r.date||'',upi:r.upi||''});
+    });
+    if(Object.keys(loaded).length) PAYMENTS = loaded;
+  }
+  const resultsRows = await loadSheetData(SHEETS.Results, []);
+  if(resultsRows.length) RESULTS = parseResultsRows(resultsRows);
+  const lectureRows = await loadSheetData(SHEETS.Lectures, LECTURES);
+  if(lectureRows.length) LECTURES = lectureRows;
+  const attendanceRows = await loadSheetData(SHEETS.Attendance, []);
+  if(attendanceRows.length) ATTENDANCE = parseAttendanceRows(attendanceRows);
+  const noticesRows = await loadSheetData(SHEETS.Notices, NOTICES);
+  if(noticesRows.length) NOTICES = noticesRows;
+  const queryRows = await loadSheetData(SHEETS.Queries, []);
+  if(queryRows.length) QUERIES = queryRows;
+}
 
 // ══════════════════════════════════════
 // STATE
@@ -409,14 +456,18 @@ let currentLecSubj='All';
 let selectedQuerySubj='Maths';
 let isDark=localStorage.getItem('bei_student_dark')==='true';
 
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+  const btn = document.getElementById('dark-btn');
+  if(btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+applyTheme();
+
 function loadLS(key,fallback){try{const d=localStorage.getItem(key);return d?JSON.parse(d):fallback;}catch{return fallback;}}
 function saveLS(key,data){try{localStorage.setItem(key,JSON.stringify(data));}catch{}}
 
-let QUERIES=loadLS('bei_queries',[
-  {id:'Q001',studentId:'STU-NK-001',studentName:'Rahul Kumar Sharma',branch:'Narkatiya',cls:'10th',subject:'Maths',question:'In quadratic equations, when do we use discriminant vs factoring?',date:'2026-04-04',time:'8:45 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'Great question Rahul! Use factoring first when roots look like integers. Discriminant b²−4ac: positive=2 roots, zero=1 root, negative=no real roots.',responseDate:'2026-04-05',responseTime:'7:20 AM',resolvedIn:'app'},
-  {id:'Q002',studentId:'STU-NK-002',studentName:'Priya Yadav',branch:'Narkatiya',cls:'9th',subject:'Hindi',question:'कबीर के दोहों में "माटी कहे कुम्हार से" का गहरा अर्थ क्या है?',date:'2026-04-04',time:'9:10 PM',status:'pending',teacherId:'TCH-002',teacherName:'Smt. Sunita Devi',response:null},
-  {id:'Q003',studentId:'STU-RP-002',studentName:'Rohan Tiwari',branch:'Rampur',cls:'10th',subject:'Maths',question:'I am confused about signs when completing the square.',date:'2026-04-03',time:'7:30 PM',status:'answered',teacherId:'TCH-001',teacherName:'Sh. Ramesh Kumar',response:'For x²+6x+5=0: Move constant, add 9 both sides, factor as (x+3)²=4, so x=−1 or −5.',responseDate:'2026-04-04',responseTime:'6:45 AM',resolvedIn:'class'},
-]);
+let QUERIES = loadLS('bei_queries', []);
+initStudentApp();
 
 // Subject→Teacher mapping
 const SUBJ_TEACHER={
@@ -536,28 +587,32 @@ function toast(msg,dur=3000){
 // ══════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════
-async function doLogin() {
-  const id = document.getElementById("inp-id").value.trim();
-  const dobInput = document.getElementById("inp-dob").value;
-  
-  console.log(id + ' and ' + dobInput);
-   const res = await fetch("https://sheetdb.io/api/v1/iat3rnpemm4rd", {
-    headers: {
-      "Authorization": "n9vbi2cv95u9s9n7gi7vcafkvog7q4a5ow56essy"
-    }
-  });
-  const data = await res.json();
-  console.log(data);
-  const user = data.find(s => 
-    s.id == id && s.dob === dobInput
-  );
-
-  if (user) {
-    alert("Login success ✅");
-  } else {
-    console.log("Sheet:", data);
-    alert("Wrong ID or DOB ❌");
+function doLogin(){
+  const id=document.getElementById('inp-id').value.trim().toUpperCase();
+  const dob=document.getElementById('inp-dob').value;
+  const err=document.getElementById('login-err');
+  err.style.display='none';
+  if(!id||!dob){
+    err.textContent=lang==='hi'?'कृपया ID और जन्मतिथि दर्ज करें':'Please enter Student ID and Date of Birth';
+    err.style.display='block';return;
   }
+ const stu = STUDENTS.find(s => {
+  const parts = s.dob.split('/');
+  const formattedDob = `${parts[2]}-${parts[1]}-${parts[0]}`;
+  return String(s.id) === id && formattedDob === dob;
+});
+
+if(!stu){
+  err.textContent = lang==='hi'
+    ? 'ID या जन्मतिथि गलत है। फिर से जाँचें।'
+    : 'Incorrect Student ID or Date of Birth. Please check again.';
+  err.style.display='block';
+  return;
+}
+  currentStudent=stu;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-shell').classList.add('visible');
+  bootApp();
 }
 
 // Enter key on login
@@ -566,7 +621,7 @@ document.getElementById('inp-id').addEventListener('keydown',e=>{if(e.key==='Ent
 
 function bootApp(){
   const s=currentStudent;
-  if(isDark){document.documentElement.setAttribute('data-theme','dark');document.getElementById('dark-btn').textContent='☀️';}
+  applyTheme();
   const h=new Date().getHours();
   document.getElementById('hdr-greeting').textContent=h<12?t('greeting_morning'):h<17?t('greeting_afternoon'):t('greeting_evening');
   document.getElementById('hdr-name').textContent=s.name;
@@ -696,7 +751,7 @@ function showExamResult(exam){
 // ══════════════════════════════════════
 // PDF DOWNLOAD
 // ══════════════════════════════════════
-function downloadPDF(exam){
+async function downloadPDF(exam){
   const s=currentStudent;
   const data=RESULTS[exam];
   if(!data||!data.scores[s.id]){toast('Results not available for download');return;}
@@ -712,6 +767,15 @@ function downloadPDF(exam){
     const pass=scores.every(m=>m>=max*0.33);
     const today=new Date().toLocaleDateString('en-IN');
 
+    // Load logo
+    const logoResponse = await fetch('./asset/logo.png');
+    const logoBlob = await logoResponse.blob();
+    const logoDataUrl = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(logoBlob);
+    });
+
     // header bg
     doc.setFillColor(26,35,126);doc.rect(0,0,210,45,'F');
     doc.setTextColor(255,255,255);
@@ -723,20 +787,15 @@ function downloadPDF(exam){
     doc.text('MARKSHEET / RESULT CARD',105,34,{align:'center'});
 
     // stamp area
-    doc.setDrawColor(26,35,126);doc.setLineWidth(0.5);
-    doc.roundedRect(148,48,58,32,3,3,'S');
-    doc.setTextColor(26,35,126);doc.setFontSize(8);doc.setFont('helvetica','normal');
-    doc.text('OFFICIAL SEAL',177,56,{align:'center'});
-    doc.text('Brilliant Educational',177,63,{align:'center'});
-    doc.text('Institute',177,69,{align:'center'});
+    doc.addImage(logoDataUrl, 'PNG', 148, 48, 58, 32);
 
     // student info
     doc.setTextColor(30,30,30);doc.setFontSize(10);
     const info=[
       ['Student Name',s.name],['Student ID',s.id],
       ['Class / Batch',s.cls+' — '+s.batch],
-      ['Branch','📍 '+s.branch],['Exam / परीक्षा',exam],
-      ['Date / तिथि',today],
+      ['Branch',''+ s.branch],['Exam ',exam],
+      ['Date ',today],
     ];
     let y=52;
     info.forEach(([lbl,val])=>{
@@ -862,8 +921,7 @@ function renderAttendance(){
 // ══════════════════════════════════════
 function toggleDark(){
   isDark=!isDark;
-  document.documentElement.setAttribute('data-theme',isDark?'dark':'');
-  document.getElementById('dark-btn').textContent=isDark?'☀️':'🌙';
+  applyTheme();
   localStorage.setItem('bei_student_dark',isDark);
   toast(isDark?'🌙 Dark mode on':'☀️ Light mode on');
 }
@@ -923,6 +981,7 @@ function postQuery(){
   };
   QUERIES.unshift(q);
   saveLS('bei_queries',QUERIES);
+  if(SHEETS_API_URL){ saveSheetData(SHEETS.Queries, QUERIES).catch(()=>{}); }
   document.getElementById('query-ta').value='';
   renderQueriesPage();
   toast(`✅ Question sent to ${teacher.name}! They will reply soon.`);
