@@ -539,8 +539,13 @@ function toast(msg,dur=3000){
 async function doLogin() {
   const id = document.getElementById("inp-id").value.trim();
   const dobInput = document.getElementById("inp-dob").value;
+  
   console.log(id + ' and ' + dobInput);
-  const res = await fetch("https://sheetdb.io/api/v1/iat3rnpemm4rd");
+   const res = await fetch("https://sheetdb.io/api/v1/iat3rnpemm4rd", {
+    headers: {
+      "Authorization": "n9vbi2cv95u9s9n7gi7vcafkvog7q4a5ow56essy"
+    }
+  });
   const data = await res.json();
   console.log(data);
   const user = data.find(s => 
